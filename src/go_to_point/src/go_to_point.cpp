@@ -35,17 +35,19 @@ private:
 	{
 		ROS_INFO("Recived: \"%s\" command.", msg);
 
-		const geometry_msgs::PointStamped& to;
+		geometry_msgs::PointStamped& to;
 		
 		// Lookup db to associate a command string with coordinates
 		
+		to.header.frame_id = "/map"; // ?
+
 		// Hard coded coordinates:
-		to.point.x = 1; // double
-		to.point.y = 0; // double
+		to.point.x = 4; // double
+		to.point.y = -3; // double
 		to.point.z = 1; // double
 
-		to.header.frame_id = "/map"; // ? 
-
+		// home = [0.654, -1.07, 0.00156]
+		// random point in hallway = [4, -3, 0.00622]
 
 		_go_to_point(to);
 	}

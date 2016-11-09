@@ -1,0 +1,6 @@
+devel_space: /home/soren/ws/rob1b217/devel
+install: false
+install_space: /home/soren/ws/rob1b217/install
+profile: default
+source_space: /home/soren/ws/rob1b217/src
+workspace: /home/soren/ws/rob1b217

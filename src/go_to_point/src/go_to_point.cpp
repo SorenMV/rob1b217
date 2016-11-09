@@ -4,8 +4,8 @@
 #include <actionlib/client/simple_client_goal_state.h>
 #include <geometry_msgs/PointStamped.h>
 #include <move_base_msgs/MoveBaseAction.h>
-#include <visualization_msgs/Marker.h>
-#include <visualization_msgs/MarkerArray.h>
+#include <String>
+
 
 class Route
 {
@@ -15,15 +15,6 @@ private:
 	actionlib::SimpleActionClient<move_base_msgs::MoveBaseAction> client;
 	ros::Publisher marker_pub;
 	ros::Subscriber click_sub;
-
-	void _send_goal(const geometry_msgs::PointStamped& goal_point)
-	{
-		move_base_msgs::MoveBaseGoal goal;
-		goal.target_pose.header.frame_id = goal_point.header.frame_id;
-		goal.target_pose.pose.position = goal_point.point;
-		client.sendGoal(goal, boost::bind(&Route::_target_reached_cb, this, _1, _2));
-		_send_markers();
-	}
 
 	void _go_to_point(const geometry_msgs::PointStamped& goal_point)
 	{
@@ -39,11 +30,6 @@ private:
 		// _send_goal(to);
 	}
 
-	void _send_markers()
-	{
-		
-	}
-
 	
 	void _command_send_cb(const String& msg)
 	{
@@ -55,22 +41,20 @@ private:
 		
 		// Hard coded coordinates:
 		to = {1,0,0,1};
+		to.header.frame_id = "/map"; // ? 
 
 
 		_go_to_point(to);
 	}
 
 public:
-	Route() :
-		client("move_base")
+	Route():client("move_base")
 	{
 		ros::NodeHandle n;
 		marker_pub = n.advertise<visualization_msgs::MarkerArray>("visualization_marker_array", 1);
 		click_sub = n.subscribe("command_send", 1, &Route::_command_send_cb, this);
 	};
 	~Route(){};
-
-
 };
 
 // This is where we start

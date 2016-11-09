@@ -40,7 +40,10 @@ private:
 		// Lookup db to associate a command string with coordinates
 		
 		// Hard coded coordinates:
-		to = {1,0,0,1};
+		to.point.x = 1; // double
+		to.point.y = 0; // double
+		to.point.z = 1; // double
+
 		to.header.frame_id = "/map"; // ? 
 
 

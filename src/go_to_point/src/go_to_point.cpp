@@ -5,12 +5,12 @@
 #include <geometry_msgs/PointStamped.h>
 #include <move_base_msgs/MoveBaseAction.h>
 #include "std_msgs/String.h"
+#include <sstream>
 
 
 class Route
 {
 private:
-	unsigned int stops_initialized;
 	geometry_msgs::PointStamped goal;
 	actionlib::SimpleActionClient<move_base_msgs::MoveBaseAction> client;
 	ros::Publisher marker_pub;
@@ -21,13 +21,21 @@ private:
 		move_base_msgs::MoveBaseGoal goal;
 		goal.target_pose.header.frame_id = goal_point.header.frame_id;
 		goal.target_pose.pose.position = goal_point.point;
-		client.sendGoal(goal, boost::bind(&Route::_target_reached_cb, this, _1, _2));
+		client.sendGoal(goal, boost::bind(&Route::_target_reached_cb, this, _1));
+		ROS_INFO("Navigating ...");
 	}
 
-	void _target_reached_cb(const actionlib::SimpleClientGoalState& state, const move_base_msgs::MoveBaseResultConstPtr& result)
+	void _target_reached_cb(const actionlib::SimpleClientGoalState& state)
 	{
-		// std::swap(from, goal);
-		// _send_goal(goal);
+
+		if (state == actionlib::SimpleClientGoalState::SUCCEEDED)
+		{
+			ROS_INFO("Target reached.");
+		}
+		else
+		{
+			ROS_INFO("Failed to reach target.");
+		}
 	}
 
 	
@@ -37,16 +45,16 @@ private:
 		
 		// 1. Lookup db to associate a command string with coordinates
 		
-		// coordinate frame
-		goal.header.frame_id = "map"; 
+		// coordinate frame ("map", "base_link")
+		goal.header.frame_id = "map";
 
 		// Hard coded coordinates:
-		goal.point.x = 4; // double
-		goal.point.y = -3; // double
-		goal.point.z = 1; // double
+		goal.point.x = 4.0; // double
+		goal.point.y = -3.0; // double
+		goal.point.z = 1.0; // double
 
-		// home = [0.654, -1.07, 1]
-		// random point in hallway = [4, -3, 1]
+		// home = [0.654, -1.07, 1.0]
+		// random point in hallway = [4.0, -3.0, 1.0]
 
 		// Send coordinates to next function
 		_go_to_point(goal);
@@ -65,6 +73,14 @@ public:
 
 		// subscribe("topic", queueSize, callbackFunction, hint)
 		click_sub = n.subscribe("commandtest", 10, &Route::_command_send_cb, this);
+
+		std_msgs::String msg;
+ 
+     	std::stringstream ss;
+     	ss << "hello world";
+     	msg.data = ss.str();
+
+		_command_send_cb(msg);
 	};
 };
 

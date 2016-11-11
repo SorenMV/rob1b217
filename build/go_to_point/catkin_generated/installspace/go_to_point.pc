@@ -1,8 +1,0 @@
-prefix=/home/soren/ws/rob1b217/install
-
-Name: go_to_point
-Description: Description of go_to_point
-Version: 0.0.0
-Cflags: 
-Libs: -L/home/soren/ws/rob1b217/install/lib 
-Requires: 

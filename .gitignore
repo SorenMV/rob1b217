@@ -1,3 +1,7 @@
+biuld/
+logs/
+devel/
+
 # Compiled Object files
 *.slo
 *.lo

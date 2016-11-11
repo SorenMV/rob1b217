@@ -4,14 +4,14 @@
 #include <actionlib/client/simple_client_goal_state.h>
 #include <geometry_msgs/PointStamped.h>
 #include <move_base_msgs/MoveBaseAction.h>
-#include <String>
+#include "std_msgs/String.h"
 
 
 class Route
 {
 private:
 	unsigned int stops_initialized;
-	geometry_msgs::PointStamped from, to;
+	geometry_msgs::PointStamped goal;
 	actionlib::SimpleActionClient<move_base_msgs::MoveBaseAction> client;
 	ros::Publisher marker_pub;
 	ros::Subscriber click_sub;
@@ -26,47 +26,54 @@ private:
 
 	void _target_reached_cb(const actionlib::SimpleClientGoalState& state, const move_base_msgs::MoveBaseResultConstPtr& result)
 	{
-		// std::swap(from, to);
-		// _send_goal(to);
+		// std::swap(from, goal);
+		// _send_goal(goal);
 	}
 
 	
-	void _command_send_cb(const String& msg)
+	void _command_send_cb(const std_msgs::String& msg)
 	{
-		ROS_INFO("Recived: \"%s\" command.", msg);
-
-		geometry_msgs::PointStamped& to;
+		ROS_INFO("Recived command: %s", msg.data.c_str());
 		
-		// Lookup db to associate a command string with coordinates
+		// 1. Lookup db to associate a command string with coordinates
 		
-		to.header.frame_id = "/map"; // ?
+		// coordinate frame
+		goal.header.frame_id = "map"; 
 
 		// Hard coded coordinates:
-		to.point.x = 4; // double
-		to.point.y = -3; // double
-		to.point.z = 1; // double
+		goal.point.x = 4; // double
+		goal.point.y = -3; // double
+		goal.point.z = 1; // double
 
-		// home = [0.654, -1.07, 0.00156]
-		// random point in hallway = [4, -3, 0.00622]
+		// home = [0.654, -1.07, 1]
+		// random point in hallway = [4, -3, 1]
 
-		_go_to_point(to);
+		// Send coordinates to next function
+		_go_to_point(goal);
 	}
 
 public:
-	Route():client("move_base")
+	// Constructor
+	Route():
+		client("move_base", true)
 	{
+		// Standard ros NodeHandle
 		ros::NodeHandle n;
-		marker_pub = n.advertise<visualization_msgs::MarkerArray>("visualization_marker_array", 1);
-		click_sub = n.subscribe("command_send", 1, &Route::_command_send_cb, this);
+
+		// Make a publish element with type <std_msgs::String>
+		// marker_pub = n.advertise<std_msgs::String>("command_send_test", 1);
+
+		// subscribe("topic", queueSize, callbackFunction, hint)
+		click_sub = n.subscribe("commandtest", 10, &Route::_command_send_cb, this);
 	};
-	~Route(){};
 };
 
 // This is where we start
 int main(int argc, char *argv[])
 {
-	ros::init(argc, argv, "busroute");
+	ros::init(argc, argv, "go_to_point");
 
+	// Conctruct the class "Route"
 	Route r;
 
 	ros::spin();

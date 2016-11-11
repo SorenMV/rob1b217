@@ -1,5 +1,0 @@
-go_to_point
-/home/soren/ws/rob1b217/devel/.private/go_to_point/share/go_to_point/cmake/go_to_pointConfig.cmake /home/soren/ws/rob1b217/devel/share/go_to_point/cmake/go_to_pointConfig.cmake
-/home/soren/ws/rob1b217/devel/.private/go_to_point/share/go_to_point/cmake/go_to_pointConfig-version.cmake /home/soren/ws/rob1b217/devel/share/go_to_point/cmake/go_to_pointConfig-version.cmake
-/home/soren/ws/rob1b217/devel/.private/go_to_point/lib/pkgconfig/go_to_point.pc /home/soren/ws/rob1b217/devel/lib/pkgconfig/go_to_point.pc
-/home/soren/ws/rob1b217/devel/.private/go_to_point/lib/go_to_point/go_to_point_node /home/soren/ws/rob1b217/devel/lib/go_to_point/go_to_point_node

@@ -11,6 +11,8 @@ int main(int argc, char** argv){
 
   _go_to_point(4.0, -3.0, 0.5, -0.5);
 
+  ROS_INFO("HELLO WORD!");
+
   
   
   return 0;

@@ -1,8 +1,6 @@
-#include <algorithm>
 #include <ros/ros.h>
 #include <actionlib/client/simple_action_client.h>
 #include <actionlib/client/simple_client_goal_state.h>
-#include <geometry_msgs/PointStamped.h>
 #include <move_base_msgs/MoveBaseAction.h>
 #include "std_msgs/String.h"
 #include <sstream>
@@ -24,7 +22,6 @@ private:
 
 	void _target_reached_cb(const actionlib::SimpleClientGoalState& state)
 	{
-
 		if (state == actionlib::SimpleClientGoalState::SUCCEEDED)
 		{
 			ROS_INFO("Target reached.");
@@ -86,7 +83,7 @@ public:
 // This is where we start
 int main(int argc, char *argv[])
 {
-	ros::init(argc, argv, "go_to_point");
+	ros::init(argc, argv, "go_to_point_smv");
 
 	// Conctruct the class "Route"
 	Route r;

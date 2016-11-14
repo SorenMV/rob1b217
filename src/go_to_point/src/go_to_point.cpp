@@ -11,16 +11,13 @@
 class Route
 {
 private:
-	geometry_msgs::PointStamped goal;
+	move_base_msgs::MoveBaseGoal goal;
 	actionlib::SimpleActionClient<move_base_msgs::MoveBaseAction> client;
 	ros::Publisher marker_pub;
 	ros::Subscriber click_sub;
 
-	void _go_to_point(const geometry_msgs::PointStamped& goal_point)
+	void _go_to_point(const move_base_msgs::MoveBaseGoal& goal)
 	{
-		move_base_msgs::MoveBaseGoal goal;
-		goal.target_pose.header.frame_id = goal_point.header.frame_id;
-		goal.target_pose.pose.position = goal_point.point;
 		client.sendGoal(goal, boost::bind(&Route::_target_reached_cb, this, _1));
 		ROS_INFO("Navigating ...");
 	}
@@ -46,12 +43,14 @@ private:
 		// 1. Lookup db to associate a command string with coordinates
 		
 		// coordinate frame ("map", "base_link")
-		goal.header.frame_id = "map";
+		
+		goal.target_pose.header.frame_id = "map";
 
 		// Hard coded coordinates:
-		goal.point.x = 4.0; // double
-		goal.point.y = -3.0; // double
-		goal.point.z = 1.0; // double
+		goal.target_pose.pose.position.x = 4.0; // double
+		goal.target_pose.pose.position.y = -3.0; // double
+		goal.target_pose.pose.orientation.z = 1.0; // double 1.0 to -1.0
+		goal.target_pose.pose.orientation.w = 1.0; // 
 
 		// home = [0.654, -1.07, 1.0]
 		// random point in hallway = [4.0, -3.0, 1.0]

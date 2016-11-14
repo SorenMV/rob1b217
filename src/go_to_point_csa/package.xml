@@ -1,8 +1,8 @@
 <?xml version="1.0"?>
 <package>
-  <name>gotopoint</name>
+  <name>go_to_point_csa</name>
   <version>0.0.0</version>
-  <description>The gotopoint package</description>
+  <description>The go_to_point_csa package</description>
 
   <!-- One maintainer tag required, multiple allowed, one person per tag --> 
   <!-- Example:  -->

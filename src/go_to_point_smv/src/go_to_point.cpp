@@ -14,9 +14,15 @@ private:
 	ros::Publisher marker_pub;
 	ros::Subscriber click_sub;
 
-	void _go_to_point(const move_base_msgs::MoveBaseGoal& goal)
+	void _go_to_point(const move_base_msgs::MoveBaseGoal& goal_point)
 	{
-		client.sendGoal(goal, boost::bind(&Route::_target_reached_cb, this, _1));
+		//wait for the action server to come up
+		while(!client.waitForServer(ros::Duration(5.0))){
+		    ROS_INFO("Waiting for the move_base action server to come up");
+		}
+
+
+		client.sendGoal(goal_point, boost::bind(&Route::_target_reached_cb, this, _1));
 		ROS_INFO("Navigating ...");
 	}
 
@@ -37,20 +43,20 @@ private:
 	{
 		ROS_INFO("Recived command: %s", msg.data.c_str());
 		
-		// 1. Lookup db to associate a command string with coordinates
+		// 1. Lookup db for command string and get coordinates
 		
 		// coordinate frame ("map", "base_link")
-		
 		goal.target_pose.header.frame_id = "map";
+		goal.target_pose.header.stamp = ros::Time::now();
 
-		// Hard coded coordinates:
-		goal.target_pose.pose.position.x = 4.0; // double
-		goal.target_pose.pose.position.y = -3.0; // double
-		goal.target_pose.pose.orientation.z = 1.0; // double 1.0 to -1.0
-		goal.target_pose.pose.orientation.w = 1.0; // 
+		// Hard coded coordinates<double>:
+		goal.target_pose.pose.position.x = 2.0;
+		goal.target_pose.pose.position.y = 1.0; 
+		goal.target_pose.pose.orientation.z = 0.5; 
+		goal.target_pose.pose.orientation.w = 0.5;
 
-		// home = [0.654, -1.07, 1.0]
-		// random point in hallway = [4.0, -3.0, 1.0]
+		// home = [0.654, -1.07]
+		// hallway = [4.0, -3.0]
 
 		// Send coordinates to next function
 		_go_to_point(goal);

@@ -9,6 +9,8 @@ void _go_to_point(float x, float y, float z, float w);
 int main(int argc, char** argv){
   ros::init(argc, argv, "gotopoint");
 
+  ROS_INFO("HELLO WORD 1 !");
+  
   _go_to_point(4.0, -3.0, 0.5, -0.5);
 
   ROS_INFO("HELLO WORD!");

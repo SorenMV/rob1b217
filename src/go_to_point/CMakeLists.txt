@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 2.8.3)
-project(go_to_point_smv)
+project(go_to_point)
 
 ## Find catkin macros and libraries
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
@@ -121,14 +121,14 @@ include_directories(${catkin_INCLUDE_DIRS})
 # add_dependencies(busroute ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 
 ## Declare a C++ executable
-add_executable(go_to_point_smv_node ./src/go_to_point.cpp)
+add_executable(go_to_point_node ./src/go_to_point.cpp)
 
 ## Add cmake target dependencies of the executable
 ## same as for the library above
 # add_dependencies(busroute_node ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 
 ## Specify libraries to link a library or executable target against
-target_link_libraries(go_to_point_smv_node
+target_link_libraries(go_to_point_node
   ${catkin_LIBRARIES}
 )
 

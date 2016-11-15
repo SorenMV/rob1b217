@@ -3,9 +3,9 @@
 	
 	<!-- roslaunch turtlebot_navigation amcl_demo.launch map_file:=/tmp/my_map.yaml -->
 	<include file="$(find turtlebot_navigation)/launch/amcl_demo.launch">
-		<arg name="map_file" value="/home/rob1b217/ws/maps/hallway.yaml" />
+		<arg name="map_file" value="/home/rob1b217/ws/maps/hallway2.yaml" />
 	</include>
 	
   	
-  	<node name="go_to_point_smv" pkg="go_to_point_smv" type="go_to_point_smv_node" />
+  	<node name="go_to_point" pkg="go_to_point" type="go_to_point_node" />
 </launch>

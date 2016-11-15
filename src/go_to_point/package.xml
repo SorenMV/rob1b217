@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
 <package>
-  <name>go_to_point_smv</name>
+  <name>go_to_point</name>
   <version>0.0.0</version>
   <description>The go_to_point package</description>
 

@@ -8,7 +8,7 @@ This is the code we will use.
 
 ## go_to_point_csa:
 
-This is a simplified version of the code, may be good for understanding ROS concepts as well as the coordinate frame. (For some reason it can't compile right now, but the code should me fine)
+This is a simplified version of the code, may be good for understanding ROS concepts as well as the coordinate frame. 
 
 ## Running the code on the turtlebot (Remember to source the workspace!)
 

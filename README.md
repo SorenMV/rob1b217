@@ -2,7 +2,7 @@
 
 This is our code for the p1 project. In this file there will be a short introduction for running the code we have made so far.
 
-## go_to_point_smv:
+## go_to_point:
 
 This is the code we will use.
 
@@ -27,6 +27,6 @@ step 4. Load the premade map by typing "roslaunch turtlebot_navigation amcl_demo
 (step 5.) This step is only if you want to see the map on the screen. Open rviz by typing "roslaunch turtlebot_rviz_launchers view_navigation.launch"
 
 
-step 6. Run the robot to the hardcoded location by typing "rosun go_to_point_smv go_to_point_smv_node"
+step 6. Run the robot to the hardcoded location by typing "rosun go_to_point go_to_point_node"
 
 ## Test

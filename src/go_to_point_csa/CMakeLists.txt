@@ -1,4 +1,4 @@
-lscmake_minimum_required(VERSION 2.8.3)
+cmake_minimum_required(VERSION 2.8.3)
 project(go_to_point_csa)
 
 ## Find catkin macros and libraries

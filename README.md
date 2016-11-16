@@ -1,7 +1,8 @@
 ## Synopsis
 
 This is our code for the p1 project. In this file there will be a short introduction for running the code we have made so far.
-Use the WIKI section for guides and commands.
+
+**Use the WIKI section for guides and commands.**
 
 ## go_to_point:
 

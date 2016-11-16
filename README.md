@@ -29,13 +29,13 @@ step 4. Load the premade map by typing "roslaunch turtlebot_navigation amcl_demo
 
 step 6. Run the robot to the hardcoded location by typing "rosun go_to_point go_to_point_node"
 
-## GITHUB
+# GITHUB
 
-#To pull from github:
+##To pull from github:
 
 In a terminal go to the root of your workspace and type "git pull"
 
-#To push to github:
+##To push to github:
 
 step 1. In the root of your workspace type "git add *" 
 

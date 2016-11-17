@@ -3,6 +3,10 @@
 #include <move_base_msgs/MoveBaseAction.h>
 #include "std_msgs/String.h"
 #include <sstream>
+#include <iostream>
+#include <fstream>
+
+using namespace std;
 
 
 class GoToPoint
@@ -45,26 +49,62 @@ private:
 	// This function gets called when a topic we subscribe to is recieved.
 	// A command with type "String" gets send and it will look-up to see
 	// if that string is saved. If it is, set the coordinates and pass them to next function.
-	void _command_send(const std_msgs::String& command)
+
+
+
+
+	int _command_send(const std_msgs::String& command)
 	{
 		ROS_INFO("Recived command: %s", command.data.c_str());
 		
 		// 1. Lookup db for command string and get coordinates
 		
+		    int location_number;
+		    double x_db, y_db, z_db, w_db;
+
+    		ROS_INFO("Location nr. \n 1: Home \n 2: Washroom \n 3: Living room \n 4: Kitchen \n Please choose location");
+    		cin >> location_number;
+
+			    ifstream inputFile("/home/rob1b217/ws/rob1b217_w_db/src/go_to_point/src/location_database.txt");
+			    string line;
+
+			    for(int lineno = location_number; getline (inputFile,line) && lineno < 5; lineno--)
+			        if (lineno == 1)
+			        {
+
+			        istringstream ss(line);
+			         
+			            ss >> x_db >> y_db >> z_db >> w_db;
+			            ROS_INFO("reading (%d, %d, %d, %d)", 
+			x_db, 
+			y_db,
+			z_db,
+			w_db
+			);
+					}
+
+
 		// coordinate frame ("map", "base_link")
 		goal.target_pose.header.frame_id = "map";
 
 
 		// Hard coded coordinates<double>:
-		goal.target_pose.pose.position.x = 2.0;
-		goal.target_pose.pose.position.y = 1.0;
-		goal.target_pose.pose.orientation.z = 0.5;
-		goal.target_pose.pose.orientation.w = 0.5;
+		goal.target_pose.pose.position.x = x_db;
+		goal.target_pose.pose.position.y = y_db;
+		goal.target_pose.pose.orientation.z = z_db;
+		goal.target_pose.pose.orientation.w = w_db;
 
 		// home = [0.0, 0.0]
 		// hallway1 = [4.0, 1.0] ?
 		// hallway2 = [-3.0, 1.0] ?
 
+
+		ROS_INFO("Sending (%d, %d, %d, %d)", 
+			x_db, 
+			y_db,
+			z_db,
+			w_db
+			);
 		// Send coordinates to next function
 		_go_to_point(goal);
 	}
@@ -90,7 +130,7 @@ public:
 		// This is how to make a string message
 		std_msgs::String msg;
 
-     	std::stringstream ss;
+     	stringstream ss;
      	ss << "Kitchen";
      	msg.data = ss.str();
 

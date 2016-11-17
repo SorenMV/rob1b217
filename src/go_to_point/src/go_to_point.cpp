@@ -2,6 +2,7 @@
 #include <actionlib/client/simple_action_client.h>
 #include <move_base_msgs/MoveBaseAction.h>
 #include "std_msgs/String.h"
+#include <string>
 #include <sstream>
 #include <iostream>
 #include <fstream>
@@ -75,12 +76,7 @@ private:
 			        istringstream ss(line);
 			         
 			            ss >> x_db >> y_db >> z_db >> w_db;
-			            ROS_INFO("reading (%d, %d, %d, %d)", 
-			x_db, 
-			y_db,
-			z_db,
-			w_db
-			);
+			            ROS_INFO("reading (%f, %f, %f, %f)", x_db, y_db, z_db, w_db);
 					}
 
 
@@ -99,12 +95,7 @@ private:
 		// hallway2 = [-3.0, 1.0] ?
 
 
-		ROS_INFO("Sending (%d, %d, %d, %d)", 
-			x_db, 
-			y_db,
-			z_db,
-			w_db
-			);
+		ROS_INFO("Sending (%f, %f, %f, %f)", x_db, y_db,z_db,w_db);
 		// Send coordinates to next function
 		_go_to_point(goal);
 	}

@@ -42,6 +42,7 @@ roslaunch turtlebot_rviz_launchers view_navigation.launch
 
 Step 6. Run the robot to the hardcoded location by typing 
 ```
+
 rosrun go_to_point go_to_point_node
 ```
 

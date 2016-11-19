@@ -54,30 +54,33 @@ private:
 
 
 
-	int _command_send(const std_msgs::String& command)
+	int _command_send(const int& location_number)
 	{
-		ROS_INFO("Recived command: %s", command.data.c_str());
+		// ROS_INFO("Recived command: %s", command.data.c_str());
 		
 		// 1. Lookup db for command string and get coordinates
 		
-		    int location_number;
+		    
 		    double x_db, y_db, z_db, w_db;
 
-    		ROS_INFO("Location nr. \n 1: Home \n 2: Washroom \n 3: Living room \n 4: Kitchen \n Please choose location");
-    		cin >> location_number;
+		    ifstream inputFile("database/location_database.txt");
+		    string str_line;
+ 			
 
-			    ifstream inputFile("/home/rob1b217/ws/rob1b217_w_db/src/go_to_point/src/location_database.txt");
-			    string line;
 
-			    for(int lineno = location_number; getline (inputFile,line) && lineno < 5; lineno--)
-			        if (lineno == 1)
-			        {
-
-			        istringstream ss(line);
-			         
-			            ss >> x_db >> y_db >> z_db >> w_db;
-			            ROS_INFO("reading (%f, %f, %f, %f)", x_db, y_db, z_db, w_db);
-					}
+		    if(inputFile.is_open())
+		    {
+		    	for(int i = 1; i <= location_number; i++)
+		    	{
+				    std::getline(inputFile,str_line);
+				    stringstream ss(str_line);
+				    ss >> x_db;
+				    ss >> y_db;
+				    ss >> z_db;
+				    ss >> w_db;
+				}
+		    }
+		    std::cout << str_line;
 
 
 		// coordinate frame ("map", "base_link")
@@ -89,10 +92,6 @@ private:
 		goal.target_pose.pose.position.y = y_db;
 		goal.target_pose.pose.orientation.z = z_db;
 		goal.target_pose.pose.orientation.w = w_db;
-
-		// home = [0.0, 0.0]
-		// hallway1 = [4.0, 1.0] ?
-		// hallway2 = [-3.0, 1.0] ?
 
 
 		ROS_INFO("Sending (%f, %f, %f, %f)", x_db, y_db,z_db,w_db);
@@ -119,14 +118,21 @@ public:
 		// TODO: Make a fuction that listens for a joystick input
 
 		// This is how to make a string message
+		/*
 		std_msgs::String msg;
 
      	stringstream ss;
      	ss << "Kitchen";
      	msg.data = ss.str();
-
+		*/
      	// This sends a command string to next function
-		_command_send(msg);
+
+     	int putIn_location;
+     	
+		ROS_INFO("Location nr. \n 1: Home \n 2: Washroom \n 3: Living room \n 4: Kitchen \n Please choose location");
+     	cin >> putIn_location;
+
+     	_command_send(putIn_location);
 	};
 };
 

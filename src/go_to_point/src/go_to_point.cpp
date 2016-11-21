@@ -87,6 +87,10 @@ private:
 	    return 0;
 	}
 
+	// This function gets called when a topic we subscribe to is recieved.
+	// A command with type "String" gets send and it will look-up to see
+	// if that string is saved. If it is, set the coordinates and pass them to next function.
+
 	int _command_send(const string& key_pressed)
 	{
 		//Lookup db for key_pressed string and get coordinates. Line by line from the top. 
@@ -120,7 +124,6 @@ public:
 	{
 		_init_db();
 		
-
      	//"input_location" - the key pressed, which the fuction will search for in the db.
      	string key;
      	ROS_INFO("Key pressed: ");

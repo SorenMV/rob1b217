@@ -1,7 +1,6 @@
 #include <ros/ros.h>
 #include <actionlib/client/simple_action_client.h>
 #include <move_base_msgs/MoveBaseAction.h>
-#include "std_msgs/String.h"
 #include <string>
 #include <sstream>
 #include <iostream>
@@ -35,7 +34,7 @@ private:
 	// This function gets called when actionlib is done navigating to the goal
 	void _target_reached(const actionlib::SimpleClientGoalState& state)
 	{
-		// Check if actionlib successfully navigated to goal
+		// Check if actionlib "succeeded" navigating to the goal
 		if (state == actionlib::SimpleClientGoalState::SUCCEEDED)
 		{
 			ROS_INFO("Target reached.");
@@ -47,57 +46,72 @@ private:
 		}
 	}
 
-	// This function gets called when a topic we subscribe to is recieved.
-	// A command with type "String" gets send and it will look-up to see
-	// if that string is saved. If it is, set the coordinates and pass them to next function.
-
-
-
-
-	int _command_send(const std_msgs::String& command)
+	//Array for individual locations are created.
+	struct DBstruct
 	{
-		ROS_INFO("Recived command: %s", command.data.c_str());
-		
-		// 1. Lookup db for command string and get coordinates
-		
-		    int location_number;
-		    double x_db, y_db, z_db, w_db;
+		string name, key;
+		double x, y, z, w;
+	};
 
-    		ROS_INFO("Location nr. \n 1: Home \n 2: Washroom \n 3: Living room \n 4: Kitchen \n Please choose location");
-    		cin >> location_number;
+	//Creating the db struct.
+	int db_size = 10;
+	DBstruct * db = new DBstruct[db_size];
 
-			    ifstream inputFile("/home/rob1b217/ws/rob1b217_w_db/src/go_to_point/src/location_database.txt");
-			    string line;
+	int _init_db()
+	{
+		//Calling the database and naming it inputFile.
+		ifstream inputFile("database/location_database.txt");
+	    string line;
 
-			    for(int lineno = location_number; getline (inputFile,line) && lineno < 5; lineno--)
-			        if (lineno == 1)
-			        {
+		//Making sure it has succesfully been opened.
+	    if(inputFile.is_open())
+	    {
+	    	int i = 0;
 
-			        istringstream ss(line);
-			         
-			            ss >> x_db >> y_db >> z_db >> w_db;
-			            ROS_INFO("reading (%f, %f, %f, %f)", x_db, y_db, z_db, w_db);
-					}
+			//Inputting data from the database into the array. eof=end of file. getline means that it reads the entire line.
+	    	while(!inputFile.eof())
+	    	{
+	    		getline(inputFile, line);
+			    stringstream ss (line);
+			    ss >> db[i].name;
+			    ss >> db[i].key;
+			    ss >> db[i].x;
+			    ss >> db[i].y;
+			    ss >> db[i].z;
+			    ss >> db[i].w;
+			    i++;
+	    	}
+	    	inputFile.close();
+	    	return 1;
+	    }
+	    return 0;
+	}
 
 
-		// coordinate frame ("map", "base_link")
-		goal.target_pose.header.frame_id = "map";
+	int _command_send(const string& key_pressed)
+	{
+		//Lookup db for key_pressed string and get coordinates. Line by line from the top. 
+	    for (int i = 0; i < db_size; ++i)
+	    {
+	    	if(db[i].key == key_pressed)
+	    	{
+	    		// coordinate frame. "map" or "base_link"
+				goal.target_pose.header.frame_id = "map";
+				
+				//Feeding coordinations to goal from the specific array in the db array:
+				goal.target_pose.pose.position.x = db[i].x;
+				goal.target_pose.pose.position.y = db[i].y;
+				goal.target_pose.pose.orientation.z = db[i].z;
+				goal.target_pose.pose.orientation.w = db[i].w;
 
+				//"cout" the coordinates and the name of the location
+				ROS_INFO("Going to: %s (%f, %f, %f, %f)", 
+					db[i].name.c_str(), db[i].x, db[i].y, db[i].z, db[i].w);
 
-		// Hard coded coordinates<double>:
-		goal.target_pose.pose.position.x = x_db;
-		goal.target_pose.pose.position.y = y_db;
-		goal.target_pose.pose.orientation.z = z_db;
-		goal.target_pose.pose.orientation.w = w_db;
-
-		// home = [0.0, 0.0]
-		// hallway1 = [4.0, 1.0] ?
-		// hallway2 = [-3.0, 1.0] ?
-
-
-		ROS_INFO("Sending (%f, %f, %f, %f)", x_db, y_db,z_db,w_db);
-		// Send coordinates to next function
-		_go_to_point(goal);
+				// Send coordinates to next function
+				_go_to_point(goal);
+	    	}
+	    }
 	}
 
 public:
@@ -105,29 +119,14 @@ public:
 	GoToPoint():
 		client("move_base", true)
 	{
-		// Standard ros NodeHandle
-		// ros::NodeHandle n;
-
-		// Make a publish element with type <std_msgs::String>
-		// marker_pub = n.advertise<std_msgs::String>("command_send", 1);
-
-		// This is how to subscribe("topic", queueSize, callbackFunction, hint)
-		// click_sub = n.subscribe("command_send", 10, &Route::_command_send, this);
-
-
-
-		// TODO: Make a fuction that listens for a joystick input
-
-		// This is how to make a string message
-		std_msgs::String msg;
-
-     	stringstream ss;
-     	ss << "Kitchen";
-     	msg.data = ss.str();
-
-     	// This sends a command string to next function
-		_command_send(msg);
-	};
+		_init_db();
+		
+     	//"input_location" - the key pressed, which the fuction will search for in the db.
+     	string key;
+     	ROS_INFO("Key pressed: ");
+     	cin >> key;
+		_command_send(key);
+	}
 };
 
 // This is where we start
@@ -136,7 +135,17 @@ int main(int argc, char *argv[])
 	ros::init(argc, argv, "go_to_point");
 
 	// Conctruct the class "GoToPoint"
-	GoToPoint g;
+	GoToPoint goTo;
+
 
 	return 0;
 }
+
+
+	/*
+	Writing to the database
+		ofstream inputFile;
+		inputFile.open ("database/location_database.txt")
+		inputFile << "Writing this to he database. \n";
+		inputFie.close();
+	 */

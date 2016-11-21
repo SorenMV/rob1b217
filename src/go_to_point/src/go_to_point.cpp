@@ -87,6 +87,9 @@ private:
 	    return 0;
 	}
 
+	// This function gets called when a topic we subscribe to is recieved.
+	// A command with type "String" gets send and it will look-up to see
+	// if that string is saved. If it is, set the coordinates and pass them to next function.
 
 	int _command_send(const string& key_pressed)
 	{

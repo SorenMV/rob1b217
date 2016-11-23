@@ -14,7 +14,7 @@ class GoToPoint
 private:
 	// Initialize variables
 	move_base_msgs::MoveBaseGoal goal;
-	actionlib::SimpleActionClient<move_base_msgs::MoveBaseAction> client("move_base", true);
+	actionlib::SimpleActionClient<move_base_msgs::MoveBaseAction> client;
 
 
 	// This function gets called when a coordinate is set and wants to move
@@ -119,7 +119,8 @@ private:
 
 public:
 	// Constructor
-	GoToPoint()
+	GoToPoint():
+		client("move_base", true) // true -> don't need ros::spin()
 	{
 		_init_db();
 		

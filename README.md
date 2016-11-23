@@ -8,10 +8,6 @@ This is our code for the p1 project. In this file there will be a short introduc
 
 This is the code we will use.
 
-## go_to_point_csa:
-
-This is a simplified version of the code, may be good for understanding ROS concepts as well as the coordinate frame. 
-
 ## Running the code on the turtlebot (Remember to source the workspace!)
 
 Step 1. Run a roscore by typing `roscore` in the terminal.
@@ -40,9 +36,14 @@ roslaunch turtlebot_rviz_launchers view_navigation.launch
 ```
 
 
-Step 6. Run the robot to the hardcoded location by typing 
+Step 6. Run the program by typing:
 ```
 
 rosrun go_to_point go_to_point_node
 ```
 
+Step 7. The robot has 4 predefined locations: A, B, X, Y. 
+```
+
+Step 8. When it says "Press a key" you can press either A, B, X, Y and the robot will go to the defined location.
+```

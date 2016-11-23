@@ -23,7 +23,7 @@ private:
 		//wait for the action server to come up
 		while( ! client.waitForServer(ros::Duration(5.0)) )
 		{
-		    ROS_INFO("Waiting for the move_base action server to come up.");
+			ROS_INFO("Waiting for the move_base action server to come up.");
 		}
 
 		// Send the goal to actionlib and return to the "callback" function
@@ -61,44 +61,44 @@ private:
 	{
 		//Calling the database and naming it inputFile.
 		ifstream inputFile("database/location_database.txt");
-	    string line;
+		string line;
 
 		//Making sure it has succesfully been opened.
-	    if(inputFile.is_open())
-	    {
-	    	int i = 0;
+		if(inputFile.is_open())
+		{
+			int i = 0;
 
 			//Inputting data from the database into the array. eof=end of file. getline means that it reads the entire line.
-	    	while(!inputFile.eof())
-	    	{
-	    		getline(inputFile, line);
-			    stringstream ss (line);
-			    ss >> db[i].name;
-			    ss >> db[i].key;
-			    ss >> db[i].x;
-			    ss >> db[i].y;
-			    ss >> db[i].z;
-			    ss >> db[i].w;
-			    i++;
-	    	}
-	    	inputFile.close();
-	    	return 1;
-	    }
-	    return 0;
+			while(!inputFile.eof())
+			{
+				getline(inputFile, line);
+				stringstream ss (line);
+				ss >> db[i].name;
+				ss >> db[i].key;
+				ss >> db[i].x;
+				ss >> db[i].y;
+				ss >> db[i].z;
+				ss >> db[i].w;
+				i++;
+			}
+			inputFile.close();
+			return 1;
+		}
+		return 0;
 	}
 
-	// This function gets called when a topic we subscribe to is recieved.
-	// A command with type "String" gets send and it will look-up to see
-	// if that string is saved. If it is, set the coordinates and pass them to next function.
+	// This function gets called when a key is pressed
+	// A command with type "string" gets send and it will look-up to see
+	// if that string is saved.
 
 	int _command_send(const string& key_pressed)
 	{
 		//Lookup db for key_pressed string and get coordinates. Line by line from the top. 
-	    for (int i = 0; i < db_size; ++i)
-	    {
-	    	if(db[i].key == key_pressed)
-	    	{
-	    		// coordinate frame. "map" or "base_link"
+		for (int i = 0; i < db_size; ++i)
+		{
+			if(db[i].key == key_pressed)
+			{
+				// coordinate frame. "map" or "base_link"
 				goal.target_pose.header.frame_id = "map";
 				
 				//Feeding coordinations to goal from the specific array in the db array:
@@ -113,23 +113,26 @@ private:
 
 				// Send coordinates to next function
 				_go_to_point(goal);
-	    	}
-	    }
+			}
+		}
 	}
 
 public:
 	// Constructor
 	GoToPoint():
-		client("move_base", true)
+		client("move_base", true) // true -> don't need ros::spin()
 	{
 		_init_db();
 		
-     	//"input_location" - the key pressed, which the fuction will search for in the db.
-     	string key;
-     	ROS_INFO("Key pressed: ");
-     	cin >> key;
+		// This will be moved to a function
+		//"input_location" - the key pressed, which the fuction will search for in the db.
+		string key;
+		ROS_INFO("Press a key: ");
+		cin >> key;
+
 		_command_send(key);
 	}
+	
 };
 
 // This is where we start

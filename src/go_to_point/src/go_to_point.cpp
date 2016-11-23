@@ -6,6 +6,9 @@
 #include <iostream>
 #include <fstream>
 
+#include "std_msgs/UInt8.h"
+
+
 using namespace std;
 
 
@@ -13,8 +16,14 @@ class GoToPoint
 {
 private:
 	// Initialize variables
+	ros::NodeHandle go_to_point_nodehandle;
 	move_base_msgs::MoveBaseGoal goal;
 	actionlib::SimpleActionClient<move_base_msgs::MoveBaseAction> client;
+	ros::Subscriber subscribtion_from_joy;
+
+
+
+
 
 
 	// This function gets called when a coordinate is set and wants to move
@@ -49,13 +58,14 @@ private:
 	//Array for individual locations are created.
 	struct DBstruct
 	{
-		string name, key;
+		string name; 
+		uint8_t key;
 		double x, y, z, w;
 	};
 
 	//Creating the db struct.
 	int db_size = 10;
-	DBstruct * db = new DBstruct[db_size]; //den type data db peger på er af typen DBstruct?:::::::::::: Derefter laver vi 10 objekter 
+	DBstruct * db = new DBstruct[db_size]; //den type data db peger på er af typen DBstruct?:::::::::::: Derefter laver vi 10 objekter  //would be nice in English
 
 	int _init_db()
 	{
@@ -91,7 +101,7 @@ private:
 	// A command with type "string" gets send and it will look-up to see
 	// if that string is saved.
 
-	int _command_send(const string& key_pressed)
+	int _command_send(const uint8_t& key_pressed)
 	{
 		//Lookup db for key_pressed string and get coordinates. Line by line from the top. 
 		for (int i = 0; i < db_size; ++i)
@@ -123,16 +133,22 @@ public:
 		client("move_base", true) // true -> don't need ros::spin()
 	{
 		_init_db();
+		 subscribtion_from_joy = go_to_point_nodehandle.subscribe<std_msgs::UInt8>("go_to_point_trigger", 10, &GoToPoint::callback_from_joy, this); 
 		
 		// This will be moved to a function
 		//"input_location" - the key pressed, which the fuction will search for in the db.
-		string key;
-		ROS_INFO("Press a key: ");
-		cin >> key;
 
-		_command_send(key);
 	}
 	
+
+void callback_from_joy(const std_msgs::UInt8 subscribed_key)
+{
+	uint8_t key = subscribed_key.data;
+
+	_command_send(key);
+}
+
+
 };
 
 // This is where we start

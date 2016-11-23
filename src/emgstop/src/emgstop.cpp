@@ -4,7 +4,7 @@
 using namespace std;
 
 ros::NodeHandle nh;
-ros::Publisher stop_pub = nh.advertise<geometry_msgs::Twist>("cmd_vel",1);
+ros::Publisher stop_pub = nh.advertise<geometry_msgs::Twist>("cmd_vel",1); //topic should be "mobile_base/commands/velocity"
 
 
 

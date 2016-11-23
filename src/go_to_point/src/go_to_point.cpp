@@ -55,7 +55,7 @@ private:
 
 	//Creating the db struct.
 	int db_size = 10;
-	DBstruct * db = new DBstruct[db_size];
+	DBstruct * db = new DBstruct[db_size]; //den type data db peger på er af typen DBstruct?:::::::::::: Derefter laver vi 10 objekter 
 
 	int _init_db()
 	{

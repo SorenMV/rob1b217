@@ -1,10 +1,10 @@
 cmake_minimum_required(VERSION 2.8.3)
-project(go_to_point_class_csa)
+project(emgstop)
 
 ## Find catkin macros and libraries
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
 ## is used, also find other catkin packages
-find_package(catkin REQUIRED)
+find_package(catkin REQUIRED roscpp geometry_msgs)
 
 ## System dependencies are found with CMake's conventions
 # find_package(Boost REQUIRED COMPONENTS system)
@@ -97,7 +97,7 @@ find_package(catkin REQUIRED)
 ## DEPENDS: system dependencies of this project that dependent projects also need
 catkin_package(
 #  INCLUDE_DIRS include
-#  LIBRARIES go_to_point_class_csa
+#  LIBRARIES emgstop_ws
 #  CATKIN_DEPENDS other_catkin_pkg
 #  DEPENDS system_lib
 )
@@ -108,29 +108,29 @@ catkin_package(
 
 ## Specify additional locations of header files
 ## Your package locations should be listed before other locations
-# include_directories(include)
+ include_directories(${catkin_INCLUDE_DIRS})
 
 ## Declare a C++ library
-# add_library(go_to_point_class_csa
-#   src/${PROJECT_NAME}/go_to_point_class_csa.cpp
+# add_library(emgstop_ws
+#   src/${PROJECT_NAME}/emgstop_ws.cpp
 # )
 
 ## Add cmake target dependencies of the library
 ## as an example, code may need to be generated before libraries
 ## either from message generation or dynamic reconfigure
-# add_dependencies(go_to_point_class_csa ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
+# add_dependencies(emgstop_ws ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 
 ## Declare a C++ executable
-# add_executable(go_to_point_class_csa_node src/go_to_point_class_csa_node.cpp)
+ add_executable(emgstop_node ./src/emgstop.cpp)
 
 ## Add cmake target dependencies of the executable
 ## same as for the library above
-# add_dependencies(go_to_point_class_csa_node ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
+# add_dependencies(emgstop_ws_node ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 
 ## Specify libraries to link a library or executable target against
-# target_link_libraries(go_to_point_class_csa_node
-#   ${catkin_LIBRARIES}
-# )
+ target_link_libraries(emgstop_node
+   ${catkin_LIBRARIES}
+ )
 
 #############
 ## Install ##
@@ -147,7 +147,7 @@ catkin_package(
 # )
 
 ## Mark executables and/or libraries for installation
-# install(TARGETS go_to_point_class_csa go_to_point_class_csa_node
+# install(TARGETS emgstop_ws emgstop_ws_node
 #   ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
 #   LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
 #   RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
@@ -172,7 +172,7 @@ catkin_package(
 #############
 
 ## Add gtest based cpp test target and link libraries
-# catkin_add_gtest(${PROJECT_NAME}-test test/test_go_to_point_class_csa.cpp)
+# catkin_add_gtest(${PROJECT_NAME}-test test/test_emgstop_ws.cpp)
 # if(TARGET ${PROJECT_NAME}-test)
 #   target_link_libraries(${PROJECT_NAME}-test ${PROJECT_NAME})
 # endif()

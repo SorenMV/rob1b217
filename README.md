@@ -45,4 +45,4 @@ rosrun go_to_point go_to_point_node
 Step 7. The robot has 4 predefined locations: A, B, X, Y. 
 
 
-Step 8. When it says "Press a key" you can press either A, B, X, Y and the robot will go to the defined location.
+Step 8. When it says "Press a key" you can press either A, B, X, Y and the robot will go to the desired location.

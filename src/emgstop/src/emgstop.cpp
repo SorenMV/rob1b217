@@ -27,7 +27,7 @@ int main(int argc, char** argv){
   {
 
   	stop.linear.x = 0;
-  	stop.linear.y = 0;
+  	stop.linear.y = 0; //I don't think we need/are able to use "linear.y"
   	stop.angular.z = 0;
   	
   	

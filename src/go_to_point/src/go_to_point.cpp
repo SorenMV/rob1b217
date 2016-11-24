@@ -22,10 +22,6 @@ private:
 	ros::Subscriber subscribtion_from_joy;
 
 
-
-
-
-
 	// This function gets called when a coordinate is set and wants to move
 	void _go_to_point(const move_base_msgs::MoveBaseGoal& goal)
 	{
@@ -55,15 +51,14 @@ private:
 		}
 	}
 
-	//Array for individual locations are created.
+	//Struct for individual locations are created.
 	struct DBstruct
 	{
 		string name; 
 		uint16_t key;
 		double x, y, z, w;
 	};
-
-	//Creating the db struct.
+	
 	int db_size = 10;
 
 	// The type "db" array with DBstruct types inside
@@ -133,23 +128,19 @@ private:
 public:
 	// Constructor
 	GoToPoint():
-		client("move_base") // true -> don't need ros::spin()
+		client("move_base")
 	{
 		_init_db();
 		 subscribtion_from_joy = go_to_point_nodehandle.subscribe<std_msgs::UInt16>("go_to_point_trigger", 10, &GoToPoint::callback_from_joy, this); 
 		
-		// This will be moved to a function
-		//"input_location" - the key pressed, which the fuction will search for in the db.
-
+		ROS_INFO("Started. Listening for commands...");
 	}
 	
 
-void callback_from_joy(const std_msgs::UInt16 subscribed_key)
-{
-	uint16_t key = subscribed_key.data;
-
-	_command_send(key);
-}
+	void callback_from_joy(const std_msgs::UInt16 subscribed_key)
+	{
+		_command_send(subscribed_key.data);
+	}
 
 
 };
@@ -165,12 +156,3 @@ int main(int argc, char *argv[])
 	ros::spin();
 	return 0;
 }
-
-
-	/*
-	Writing to the database
-		ofstream inputFile;
-		inputFile.open ("database/location_database.txt")
-		inputFile << "Writing this to he database. \n";
-		inputFie.close();
-	 */

@@ -5,9 +5,8 @@
 #include <sstream>
 #include <iostream>
 #include <fstream>
-
 #include "std_msgs/UInt16.h"
-
+#define db_size 10
 
 using namespace std;
 
@@ -21,6 +20,17 @@ private:
 	actionlib::SimpleActionClient<move_base_msgs::MoveBaseAction> client;
 	ros::Subscriber subscribtion_from_joy;
 
+
+	//Struct for individual locations are created.
+	struct DBstruct
+	{
+		string name; 
+		uint16_t key;
+		double x, y, z, w;
+	};
+
+	// Array with type DBstruct created
+	struct DBstruct db[db_size];
 
 	// This function gets called when a coordinate is set and wants to move
 	void _go_to_point(const move_base_msgs::MoveBaseGoal& goal)
@@ -50,19 +60,6 @@ private:
 			ROS_INFO("Failed to reach target.");
 		}
 	}
-
-	//Struct for individual locations are created.
-	struct DBstruct
-	{
-		string name; 
-		uint16_t key;
-		double x, y, z, w;
-	};
-	
-	int db_size = 10;
-
-	// The type "db" array with DBstruct types inside
-	struct DBstruct db[10];
 
 	int _init_db()
 	{
@@ -99,16 +96,13 @@ private:
 	// A command with type "string" gets send and it will look-up to see
 	// if that string is saved.
 
-	int _command_send(const uint16_t& key_pressed)
+	void _callback_from_joy(const std_msgs::UInt16 subscribed_key)
 	{
-		//Lookup db for key_pressed string and get coordinates. Line by line from the top. 
+		//Lookup db for subscribed_key and get coordinates. Line by line from the top. 
 		for (int i = 0; i < db_size; ++i)
 		{
-			if(db[i].key == key_pressed)
-			{
-				// coordinate frame. "map" or "base_link"
-				goal.target_pose.header.frame_id = "map";
-				
+			if(db[i].key == subscribed_key.data)
+			{	
 				//Feeding coordinations to goal from the specific array in the db array:
 				goal.target_pose.pose.position.x = db[i].x;
 				goal.target_pose.pose.position.y = db[i].y;
@@ -131,18 +125,15 @@ public:
 		client("move_base")
 	{
 		_init_db();
-		 subscribtion_from_joy = go_to_point_nodehandle.subscribe<std_msgs::UInt16>("go_to_point_trigger", 10, &GoToPoint::callback_from_joy, this); 
+
+		// coordinate frame. "map" or "base_link"
+		goal.target_pose.header.frame_id = "map";
+
+		// Subscribing to our joystick topic
+		subscribtion_from_joy = go_to_point_nodehandle.subscribe<std_msgs::UInt16>("go_to_point_trigger", 10, &GoToPoint::_callback_from_joy, this); 
 		
-		ROS_INFO("Started. Listening for commands...");
+		ROS_INFO("Started. Listening for commands ...");
 	}
-	
-
-	void callback_from_joy(const std_msgs::UInt16 subscribed_key)
-	{
-		_command_send(subscribed_key.data);
-	}
-
-
 };
 
 // This is where we start

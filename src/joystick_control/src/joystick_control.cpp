@@ -4,7 +4,7 @@
 //moving the turtlebot
 #include <geometry_msgs/Twist.h>
 //publishing to go_to_point node
-#include "std_msgs/UInt8.h"
+#include "std_msgs/UInt16.h"
 
 
 class joystick_class
@@ -24,7 +24,7 @@ private:
 
 //declaring publishing variables
   geometry_msgs::Twist joy_cmd_vel;
-  std_msgs::UInt8 goal_target;
+  std_msgs::UInt16 goal_target;
 
 //is button pressed? variables
   bool Apressed, Bpressed, Xpressed, Ypressed, LBpressed, RBpressed, backpressed, startpressed, powerpressed, LJpressed, RJpressed;
@@ -44,7 +44,7 @@ joystick_class::joystick_class()
     joy_move_base_pub = joy_nodehandle.advertise<geometry_msgs::Twist>("mobile_base/commands/velocity", 1);
 
 //publising our own topic "go_to_point_trigger" to trigger the "go_to_point" node
-    joy_go_to_point_pub = joy_nodehandle.advertise<std_msgs::UInt8>("go_to_point_trigger", 1);
+    joy_go_to_point_pub = joy_nodehandle.advertise<std_msgs::UInt16>("go_to_point_trigger", 1);
 };
 
 

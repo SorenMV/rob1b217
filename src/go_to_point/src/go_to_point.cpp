@@ -6,7 +6,7 @@
 #include <iostream>
 #include <fstream>
 
-#include "std_msgs/UInt8.h"
+#include "std_msgs/UInt16.h"
 
 
 using namespace std;
@@ -59,12 +59,14 @@ private:
 	struct DBstruct
 	{
 		string name; 
-		uint8_t key;
+		uint16_t key;
 		double x, y, z, w;
 	};
 
 	//Creating the db struct.
 	int db_size = 10;
+
+	// The type "db" points at is DBstruct 
 	DBstruct * db = new DBstruct[db_size]; //den type data db peger på er af typen DBstruct?:::::::::::: Derefter laver vi 10 objekter  //would be nice in English
 
 	int _init_db()
@@ -76,6 +78,8 @@ private:
 		//Making sure it has succesfully been opened.
 		if(inputFile.is_open())
 		{
+			ROS_INFO("Starting db.");
+			
 			int i = 0;
 
 			//Inputting data from the database into the array. eof=end of file. getline means that it reads the entire line.
@@ -89,6 +93,7 @@ private:
 				ss >> db[i].y;
 				ss >> db[i].z;
 				ss >> db[i].w;
+				
 				i++;
 			}
 			inputFile.close();
@@ -101,7 +106,7 @@ private:
 	// A command with type "string" gets send and it will look-up to see
 	// if that string is saved.
 
-	int _command_send(const uint8_t& key_pressed)
+	int _command_send(const uint16_t& key_pressed)
 	{
 		//Lookup db for key_pressed string and get coordinates. Line by line from the top. 
 		for (int i = 0; i < db_size; ++i)
@@ -130,10 +135,10 @@ private:
 public:
 	// Constructor
 	GoToPoint():
-		client("move_base", true) // true -> don't need ros::spin()
+		client("move_base") // true -> don't need ros::spin()
 	{
 		_init_db();
-		 subscribtion_from_joy = go_to_point_nodehandle.subscribe<std_msgs::UInt8>("go_to_point_trigger", 10, &GoToPoint::callback_from_joy, this); 
+		 subscribtion_from_joy = go_to_point_nodehandle.subscribe<std_msgs::UInt16>("go_to_point_trigger", 10, &GoToPoint::callback_from_joy, this); 
 		
 		// This will be moved to a function
 		//"input_location" - the key pressed, which the fuction will search for in the db.
@@ -141,9 +146,9 @@ public:
 	}
 	
 
-void callback_from_joy(const std_msgs::UInt8 subscribed_key)
+void callback_from_joy(const std_msgs::UInt16 subscribed_key)
 {
-	uint8_t key = subscribed_key.data;
+	uint16_t key = subscribed_key.data;
 
 	_command_send(key);
 }
@@ -159,7 +164,7 @@ int main(int argc, char *argv[])
 	// Conctruct the class "GoToPoint"
 	GoToPoint goTo;
 
-
+	ros::spin();
 	return 0;
 }
 

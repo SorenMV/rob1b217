@@ -5,9 +5,10 @@
 #include <sstream>
 #include <iostream>
 #include <fstream>
-
+#include <geometry_msgs/Twist.h>
 #include "std_msgs/UInt16.h"
 
+#define db_size 10
 
 using namespace std;
 
@@ -19,21 +20,41 @@ private:
 	ros::NodeHandle go_to_point_nodehandle;
 	move_base_msgs::MoveBaseGoal goal;
 	actionlib::SimpleActionClient<move_base_msgs::MoveBaseAction> client;
-	ros::Subscriber subscribtion_from_joy;
+	ros::Subscriber subscribtion_from_joy_to_send_goal;
+	ros::Subscriber subscribtion_from_joy_to_cancel_goal;
 
+	//Struct for individual locations are created.
+	struct DBstruct
+	{
+		string name; 
+		uint16_t key;
+		double x, y, z, w;
+	};
+
+	// Array with type DBstruct created
+	struct DBstruct db[db_size];
 
 	// This function gets called when a coordinate is set and wants to move
-	void _go_to_point(const move_base_msgs::MoveBaseGoal& goal)
+	int _go_to_point(const move_base_msgs::MoveBaseGoal& goal)
 	{
-		//wait for the action server to come up
-		while( ! client.waitForServer(ros::Duration(5.0)) )
+		// Wait for the action server to come up
+		int timer=1;
+		while( (!(client.waitForServer(ros::Duration(1.0)))) && (timer <= 3))
 		{
-			ROS_INFO("Waiting for the move_base action server to come up.");
+			ROS_INFO("%i: Waiting for the move_base action server to come up.", timer);
+			timer++;
+			// Check if ros is ok. If NOT ok, then return
+			if(!ros::ok())
+				return 0;
 		}
 
 		// Send the goal to actionlib and return to the "callback" function
+		if(timer<3)
+		{
 		client.sendGoal(goal, boost::bind(&GoToPoint::_target_reached, this, _1));
 		ROS_INFO("Navigating ...");
+		return 1;
+		}
 	}
 
 	// This function gets called when actionlib is done navigating to the goal
@@ -51,20 +72,7 @@ private:
 		}
 	}
 
-	//Struct for individual locations are created.
-	struct DBstruct
-	{
-		string name; 
-		uint16_t key;
-		double x, y, z, w;
-	};
-	
-	int db_size = 10;
-	
-	// This is how to create an array with structs
-	DBstruct * db = new DBstruct[db_size];
-
-	int _init_db()
+	void _init_db()
 	{
 		//Calling the database and naming it inputFile.
 		ifstream inputFile("database/location_database.txt");
@@ -72,9 +80,7 @@ private:
 
 		//Making sure it has succesfully been opened.
 		if(inputFile.is_open())
-		{
-			ROS_INFO("Starting db.");
-			
+		{	
 			int i = 0;
 
 			//Inputting data from the database into the array. eof=end of file. getline means that it reads the entire line.
@@ -88,29 +94,30 @@ private:
 				ss >> db[i].y;
 				ss >> db[i].z;
 				ss >> db[i].w;
+				ROS_INFO("Goal(%s, %i): (%f, %f, %f, %f)", 
+					db[i].name.c_str(),db[i].key, db[i].x, db[i].y, db[i].z, db[i].w);
 				
 				i++;
 			}
 			inputFile.close();
-			return 1;
+			ROS_INFO("DB Initialized.");
 		}
-		return 0;
 	}
 
 	// This function gets called when a key is pressed
 	// A command with type "string" gets send and it will look-up to see
 	// if that string is saved.
 
-	int _command_send(const uint16_t& key_pressed)
+	void _callback_from_joy_to_send_goal(const std_msgs::UInt16 subscribed_key)
 	{
-		//Lookup db for key_pressed string and get coordinates. Line by line from the top. 
+		//Lookup db for subscribed_key and get coordinates. Line by line from the top. 
+		ROS_INFO("%i", subscribed_key.data);
+		if(subscribed_key.data<=3)
+		{
 		for (int i = 0; i < db_size; ++i)
 		{
-			if(db[i].key == key_pressed)
-			{
-				// coordinate frame. "map" or "base_link"
-				goal.target_pose.header.frame_id = "map";
-				
+			if(i == subscribed_key.data)
+			{	
 				//Feeding coordinations to goal from the specific array in the db array:
 				goal.target_pose.pose.position.x = db[i].x;
 				goal.target_pose.pose.position.y = db[i].y;
@@ -118,35 +125,66 @@ private:
 				goal.target_pose.pose.orientation.w = db[i].w;
 
 				//"cout" the coordinates and the name of the location
-				ROS_INFO("Going to: %s (%f, %f, %f, %f)", 
-					db[i].name.c_str(), db[i].x, db[i].y, db[i].z, db[i].w);
+				ROS_INFO("Going to: %s(%i): (%f, %f, %f, %f)", 
+					db[i].name.c_str(), db[i].key, db[i].x, db[i].y, db[i].z, db[i].w);
 
 				// Send coordinates to next function
 				_go_to_point(goal);
+		}
+		if(subscribed_key.data>=4) //save location - !!!not done yet!!!
+		{
+		geometry_msgs::Pose pBase;
+		for (int i = 0; i < db_size; ++i)
+		{
+			if(db[i].key == (subscribed_key.data-4))
+			{
+				db[i].x = pBase.position.x;
+				db[i].y = pBase.position.y;
+				db[i].z = pBase.orientation.z;
+				db[i].w = pBase.orientation.w;
+				ROS_INFO("Location saved on line %f (%f, %f, %f, %f)",i, db[i].x, db[i].y, db[i].z, db[i].w);
 			}
+		}
+		ofstream inputFile("database/location_database.txt");
+		if(inputFile.is_open())
+		{
+			for (int i = 0; i < db_size; ++i)
+			{
+				inputFile << db[i].name <<" "
+					<< i <<" " 
+					<< db[i].x <<" " 
+					<< db[i].y <<" " 
+					<< db[i].z <<" " 
+					<< db[i].w <<"\n";
+			}
+			inputFile.close();
+		}
+		}
+		}
 		}
 	}
 
+	void _callback_from_joy_to_cancel_goal(const geometry_msgs::Twist useless_variable)
+	{
+		//client.cancelGoal();			//!!!not done yet!!!
+		//ROS_INFO("Goal cancelled!");
+	}
 public:
 	// Constructor
 	GoToPoint():
 		client("move_base")
 	{
 		_init_db();
-		 subscribtion_from_joy = go_to_point_nodehandle.subscribe<std_msgs::UInt16>("go_to_point_trigger", 10, &GoToPoint::callback_from_joy, this); 
+
+		// coordinate frame. "map" or "base_link"
+		goal.target_pose.header.frame_id = "map";
+
+		// Subscribing to our joystick topic
+		subscribtion_from_joy_to_send_goal = go_to_point_nodehandle.subscribe<std_msgs::UInt16>("go_to_point_trigger", 10, &GoToPoint::_callback_from_joy_to_send_goal, this); 
+		subscribtion_from_joy_to_cancel_goal = go_to_point_nodehandle.subscribe<geometry_msgs::Twist>("mobile_base/commands/velocity", 10, &GoToPoint::_callback_from_joy_to_cancel_goal, this);
 		
-		// This will be moved to a function
-		//"input_location" - the key pressed, which the fuction will search for in the db.
-
+		ROS_INFO("Started. Listening for commands ...");
 	}
-	
-
-	void callback_from_joy(const std_msgs::UInt16 subscribed_key)
-	{
-		_command_send(subscribed_key.data);
-	}
-
-
 };
 
 // This is where we start
@@ -160,12 +198,3 @@ int main(int argc, char *argv[])
 	ros::spin();
 	return 0;
 }
-
-
-	/*
-	Writing to the database
-		ofstream inputFile;
-		inputFile.open ("database/location_database.txt")
-		inputFile << "Writing this to he database. \n";
-		inputFie.close();
-	 */

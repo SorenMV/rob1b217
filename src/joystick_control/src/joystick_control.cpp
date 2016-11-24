@@ -51,19 +51,21 @@ joystick_class::joystick_class()
 void joystick_class::joystick_callback(const sensor_msgs::Joy::ConstPtr& joy) //note that joy is pointer
 {
 //teleop
-linear_velocity = 0.5;
-angular_velocity = 1.5;
+linear_velocity = 1;
+angular_velocity = 1;
 ////TO DO: test these values
 
 
 //if statemets secure the emergency stop
-if(backpressed==false)
+if((backpressed==false) && (joy->axes[0]>0.15 || joy->axes[0]<-0.15 || joy->axes[1]>0.15 || joy->axes[1]<-0.15))
 {
 joy_cmd_vel.angular.z = angular_velocity * joy->axes[0];
 joy_cmd_vel.linear.x = linear_velocity * joy->axes[1];
 joy_move_base_pub.publish(joy_cmd_vel);
+ROS_INFO("%f", joy_cmd_vel.angular.z);
+ROS_INFO("%f", joy_cmd_vel.linear.x);
 }
-else if(backpressed==true){
+else if((backpressed==true)){
 joy_cmd_vel.angular.z = 0;
 joy_cmd_vel.linear.x = 0;
 joy_move_base_pub.publish(joy_cmd_vel);
@@ -74,6 +76,8 @@ joy_move_base_pub.publish(joy_cmd_vel);
 
 //buttons
 //A
+if(joy->buttons[5] == 0)
+{
 if(Apressed == false && joy->buttons[0] == 1)
 {
     goal_target.data=0;
@@ -108,6 +112,45 @@ if(Ypressed == false && joy->buttons[3] == 1)
     Ypressed = true;
 }
 if(Ypressed == true && joy->buttons[3] == 0){Ypressed = false;}
+}
+else if(joy->buttons[5] == 1)
+{
+if(Apressed == false && joy->buttons[0] == 1)
+{
+    goal_target.data=4;
+    joy_go_to_point_pub.publish(goal_target);
+    Apressed = true;
+}
+if(Apressed == true && joy->buttons[0] == 0){Apressed = false;}
+
+//B
+if(Bpressed == false && joy->buttons[1] == 1)
+{
+    goal_target.data=5;
+    joy_go_to_point_pub.publish(goal_target);
+    Bpressed = true;
+}
+if(Bpressed == true && joy->buttons[1] == 0){Bpressed = false;}
+
+//X
+if(Xpressed == false && joy->buttons[2] == 1)
+{
+    goal_target.data=6;
+    joy_go_to_point_pub.publish(goal_target);
+    Xpressed = true;
+}
+if(Xpressed == true && joy->buttons[2] == 0){Xpressed = false;}
+
+//Y
+if(Ypressed == false && joy->buttons[3] == 1)
+{
+    goal_target.data=7;
+    joy_go_to_point_pub.publish(goal_target);
+    Ypressed = true;
+}
+if(Ypressed == true && joy->buttons[3] == 0){Ypressed = false;}
+}
+
 
 //emergency stop
 if(backpressed == false && joy->buttons[6] == 1)

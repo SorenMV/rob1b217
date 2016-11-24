@@ -66,8 +66,8 @@ private:
 	//Creating the db struct.
 	int db_size = 10;
 
-	// The type "db" points at is DBstruct 
-	DBstruct * db = new DBstruct[db_size]; //den type data db peger på er af typen DBstruct?:::::::::::: Derefter laver vi 10 objekter  //would be nice in English
+	// The type "db" array with DBstruct types inside
+	struct DBstruct db[10];
 
 	int _init_db()
 	{
@@ -77,9 +77,7 @@ private:
 
 		//Making sure it has succesfully been opened.
 		if(inputFile.is_open())
-		{
-			ROS_INFO("Starting db.");
-			
+		{	
 			int i = 0;
 
 			//Inputting data from the database into the array. eof=end of file. getline means that it reads the entire line.

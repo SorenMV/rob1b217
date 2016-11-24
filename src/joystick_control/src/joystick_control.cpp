@@ -55,9 +55,19 @@ linear_velocity = 0.5;
 angular_velocity = 1.5;
 ////TO DO: test these values
 
+
+//if statemets secure the emergency stop
+if(backpressed==false)
+{
 joy_cmd_vel.angular.z = angular_velocity * joy->axes[0];
 joy_cmd_vel.linear.x = linear_velocity * joy->axes[1];
 joy_move_base_pub.publish(joy_cmd_vel);
+}
+else if(backpressed==true){
+joy_cmd_vel.angular.z = 0;
+joy_cmd_vel.linear.x = 0;
+joy_move_base_pub.publish(joy_cmd_vel);
+}
 ////TO DO: subscribe to sensor and stop if needed
 ////TO DO: smooth the movement?
 
@@ -98,6 +108,15 @@ if(Ypressed == false && joy->buttons[3] == 1)
     Ypressed = true;
 }
 if(Ypressed == true && joy->buttons[3] == 0){Ypressed = false;}
+
+//emergency stop
+if(backpressed == false && joy->buttons[6] == 1)
+{
+    backpressed = true;
+}
+if(backpressed == true && joy->buttons[6] == 0){backpressed = false;}
+
+
 
 };
 

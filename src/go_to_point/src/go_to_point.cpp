@@ -6,6 +6,7 @@
 #include <iostream>
 #include <fstream>
 #include "std_msgs/UInt16.h"
+
 #define db_size 10
 
 using namespace std;
@@ -20,7 +21,6 @@ private:
 	actionlib::SimpleActionClient<move_base_msgs::MoveBaseAction> client;
 	ros::Subscriber subscribtion_from_joy;
 
-
 	//Struct for individual locations are created.
 	struct DBstruct
 	{
@@ -33,17 +33,22 @@ private:
 	struct DBstruct db[db_size];
 
 	// This function gets called when a coordinate is set and wants to move
-	void _go_to_point(const move_base_msgs::MoveBaseGoal& goal)
+	int _go_to_point(const move_base_msgs::MoveBaseGoal& goal)
 	{
-		//wait for the action server to come up
+		// Wait for the action server to come up
 		while( ! client.waitForServer(ros::Duration(5.0)) )
 		{
 			ROS_INFO("Waiting for the move_base action server to come up.");
+			
+			// Check if ros is ok. If NOT ok, then return
+			if(!ros::ok())
+				return 0;
 		}
 
 		// Send the goal to actionlib and return to the "callback" function
 		client.sendGoal(goal, boost::bind(&GoToPoint::_target_reached, this, _1));
 		ROS_INFO("Navigating ...");
+		return 1;
 	}
 
 	// This function gets called when actionlib is done navigating to the goal
@@ -61,7 +66,7 @@ private:
 		}
 	}
 
-	int _init_db()
+	void _init_db()
 	{
 		//Calling the database and naming it inputFile.
 		ifstream inputFile("database/location_database.txt");
@@ -87,9 +92,8 @@ private:
 				i++;
 			}
 			inputFile.close();
-			return 1;
+			ROS_INFO("DB Initialized.");
 		}
-		return 0;
 	}
 
 	// This function gets called when a key is pressed

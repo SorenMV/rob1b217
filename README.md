@@ -4,9 +4,13 @@ This is our code for the p1 project. In this file there will be a short introduc
 
 **Use the WIKI section for guides and commands.**
 
-## go_to_point:
+### go_to_point:
 
-This is the code we will use.
+This node will take care of transforming user-input to coordinates on the map and go there.
+
+## joystick_control:
+
+This node will listen for user-input and determine if it is manual steering, go-to command, save location or emergency stop and fire the nessecary functions.
 
 ## Running the code on the turtlebot (Remember to source the workspace!)
 

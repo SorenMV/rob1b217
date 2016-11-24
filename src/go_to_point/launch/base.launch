@@ -3,6 +3,6 @@
 	
 	<!-- roslaunch turtlebot_navigation amcl_demo.launch map_file:=/tmp/my_map.yaml -->
 	<include file="$(find turtlebot_navigation)/launch/amcl_demo.launch">
-		<arg name="map_file" value="$HOME/ws/maps/hallway2.yaml" />
+		<arg name="map_file" value="$(env HOME)/ws/maps/hallway2.yaml" />
 	</include>
 </launch>

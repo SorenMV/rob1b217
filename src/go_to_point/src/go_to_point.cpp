@@ -22,10 +22,6 @@ private:
 	ros::Subscriber subscribtion_from_joy;
 
 
-
-
-
-
 	// This function gets called when a coordinate is set and wants to move
 	void _go_to_point(const move_base_msgs::MoveBaseGoal& goal)
 	{
@@ -55,19 +51,18 @@ private:
 		}
 	}
 
-	//Array for individual locations are created.
+	//Struct for individual locations are created.
 	struct DBstruct
 	{
 		string name; 
 		uint16_t key;
 		double x, y, z, w;
 	};
-
-	//Creating the db struct.
+	
 	int db_size = 10;
-
-	// The type "db" points at is DBstruct 
-	DBstruct * db = new DBstruct[db_size]; //den type data db peger på er af typen DBstruct?:::::::::::: Derefter laver vi 10 objekter  //would be nice in English
+	
+	// This is how to create an array with structs
+	DBstruct * db = new DBstruct[db_size];
 
 	int _init_db()
 	{
@@ -135,7 +130,7 @@ private:
 public:
 	// Constructor
 	GoToPoint():
-		client("move_base") // true -> don't need ros::spin()
+		client("move_base")
 	{
 		_init_db();
 		 subscribtion_from_joy = go_to_point_nodehandle.subscribe<std_msgs::UInt16>("go_to_point_trigger", 10, &GoToPoint::callback_from_joy, this); 
@@ -146,12 +141,10 @@ public:
 	}
 	
 
-void callback_from_joy(const std_msgs::UInt16 subscribed_key)
-{
-	uint16_t key = subscribed_key.data;
-
-	_command_send(key);
-}
+	void callback_from_joy(const std_msgs::UInt16 subscribed_key)
+	{
+		_command_send(subscribed_key.data);
+	}
 
 
 };

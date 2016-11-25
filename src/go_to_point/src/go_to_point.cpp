@@ -40,7 +40,7 @@ private:
 		while( (!(client.waitForServer(ros::Duration(1.0)))) && (timer <= 3))
 		{
 			ROS_INFO("%i: Waiting for the move_base action server to come up.", timer);
-			timer++;
+			++timer;
 			// Check if ros is ok. If NOT ok, then return
 			if(!ros::ok())
 				return 0;

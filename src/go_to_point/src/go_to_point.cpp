@@ -5,7 +5,6 @@
 #include <sstream>
 #include <iostream>
 #include <fstream>
-#include <geometry_msgs/Twist.h>
 #include "std_msgs/UInt16.h"
 
 #define db_size 10
@@ -20,8 +19,7 @@ private:
 	ros::NodeHandle go_to_point_nodehandle;
 	move_base_msgs::MoveBaseGoal goal;
 	actionlib::SimpleActionClient<move_base_msgs::MoveBaseAction> client;
-	ros::Subscriber subscribtion_from_joy_to_send_goal;
-	ros::Subscriber subscribtion_from_joy_to_cancel_goal;
+	ros::Subscriber subscribtion_from_joy;
 
 	//Struct for individual locations are created.
 	struct DBstruct
@@ -79,7 +77,7 @@ private:
 		string line;
 
 		//Making sure it has succesfully been opened.
-		if(inputFile.is_open())
+		//if(inputFile.is_open())
 		{	
 			int i = 0;
 
@@ -110,6 +108,7 @@ private:
 
 	void _callback_from_joy_to_send_goal(const std_msgs::UInt16 subscribed_key)
 	{
+		
 		//Lookup db for subscribed_key and get coordinates. Line by line from the top. 
 		ROS_INFO("%i", subscribed_key.data);
 		if(subscribed_key.data<=3)
@@ -130,19 +129,24 @@ private:
 
 				// Send coordinates to next function
 				_go_to_point(goal);
+			}
 		}
-		if(subscribed_key.data>=4) //save location - !!!not done yet!!!
+		}
+
+
+		//Save location
+		if(subscribed_key.data>=4 && subscribed_key.data<=7)  
 		{
 		geometry_msgs::Pose pBase;
 		for (int i = 0; i < db_size; ++i)
 		{
-			if(db[i].key == (subscribed_key.data-4))
+			if(i == (subscribed_key.data-4))
 			{
 				db[i].x = pBase.position.x;
 				db[i].y = pBase.position.y;
 				db[i].z = pBase.orientation.z;
 				db[i].w = pBase.orientation.w;
-				ROS_INFO("Location saved on line %f (%f, %f, %f, %f)",i, db[i].x, db[i].y, db[i].z, db[i].w);
+				ROS_INFO("Location saved on line %i (%f, %f, %f, %f)",i, db[i].x, db[i].y, db[i].z, db[i].w);
 			}
 		}
 		ofstream inputFile("database/location_database.txt");
@@ -160,15 +164,14 @@ private:
 			inputFile.close();
 		}
 		}
-		}
-		}
-	}
 
-	void _callback_from_joy_to_cancel_goal(const geometry_msgs::Twist useless_variable)
-	{
-		//client.cancelGoal();			//!!!not done yet!!!
-		//ROS_INFO("Goal cancelled!");
+		//cancels goal when joystick is moved / back button is pressed
+		if(subscribed_key.data==8)
+			{
+				client.cancelGoal();  //Christoffer: here
+			}
 	}
+	
 public:
 	// Constructor
 	GoToPoint():
@@ -180,8 +183,7 @@ public:
 		goal.target_pose.header.frame_id = "map";
 
 		// Subscribing to our joystick topic
-		subscribtion_from_joy_to_send_goal = go_to_point_nodehandle.subscribe<std_msgs::UInt16>("go_to_point_trigger", 10, &GoToPoint::_callback_from_joy_to_send_goal, this); 
-		subscribtion_from_joy_to_cancel_goal = go_to_point_nodehandle.subscribe<geometry_msgs::Twist>("mobile_base/commands/velocity", 10, &GoToPoint::_callback_from_joy_to_cancel_goal, this);
+		subscribtion_from_joy = go_to_point_nodehandle.subscribe<std_msgs::UInt16>("go_to_point_trigger", 10, &GoToPoint::_callback_from_joy_to_send_goal, this); 
 		
 		ROS_INFO("Started. Listening for commands ...");
 	}

@@ -77,7 +77,7 @@ private:
 		string line;
 
 		//Making sure it has succesfully been opened.
-		//if(inputFile.is_open())
+		if(inputFile.is_open())
 		{	
 			int i = 0;
 

@@ -7,16 +7,20 @@
 #include "std_msgs/UInt16.h"
 
 
+
+//play with values if you dare!
+  const float deadman_radius        = 0.5   ;
+  const float linear_velocity       = 0.05  ;
+  const float angular_velocity      = 0.25  ;
+  const float smoother_value        = 1.015 ;
+  const float smoother_peak         = 6     ;
+  const float is_turning_value      = 1.2   ;
+  const float additional_slow_rate  = 1.001 ;
+
+
 class joystick_class
 {
-//public because joystick_class() constructor is called in main function (everything can be public)
-public:
-  joystick_class();
-
 private:
-//callback function executed each time "sensor_msgs/Joy" node publishes something we are subscribed to
-  void joystick_callback(const sensor_msgs::Joy::ConstPtr& joy);
- 
   ros::NodeHandle       joy_nodehandle      ;
   ros::Subscriber       joy_subscriber      ;
   ros::Publisher        joy_move_base_pub   ;
@@ -35,18 +39,11 @@ private:
 //speed control variables 
   float smoother, temp_axes0;
 
-//play with values if you dare!
-  const float deadman_radius        = 0.5   ;
-  const float linear_velocity       = 0.05  ;
-  const float angular_velocity      = 0.25  ;
-  const float smoother_value        = 1.015 ;
-  const float smoother_peak         = 6     ;
-  const float is_turning_value      = 1.2   ;
-  const float additional_slow_rate  = 1.001 ;
-};
 
+//public because joystick_class() constructor is called in main function (everything can be public)
+public:
 //contructor
-joystick_class::joystick_class()
+joystick_class()
 {
 //"joy" is the topic we are subscribed to
 //"mobile_base/commands/velocity" is a topic controlling the movement if the mobile base
@@ -59,10 +56,12 @@ joystick_class::joystick_class()
 
 
   smoother = smoother_value;
-};
+}
 
 
-void joystick_class::joystick_callback(const sensor_msgs::Joy::ConstPtr& joy)
+private:
+//callback function executed each time "sensor_msgs/Joy" node publishes something we are subscribed to
+void joystick_callback(const sensor_msgs::Joy::ConstPtr& joy)
 {
 //MANUAL STEERING:
   ROS_INFO("Linear:   %f",  joy->axes[1]);
@@ -275,6 +274,7 @@ if(RJpressed == false && joy->buttons[10] == 1)
 }
 if(RJpressed == true && joy->buttons[10] == 0){RJpressed = false;}
 */
+}
 };
 
 
@@ -288,7 +288,6 @@ int main(int argc, char** argv)
 // Repeat receiving subscribtion, thus executing callback function
   ros::spin();
 }
-
 
 
 

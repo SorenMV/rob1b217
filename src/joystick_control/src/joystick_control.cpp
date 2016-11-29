@@ -142,6 +142,8 @@ private:
       //cancelGoal
       joy_go_to_point_published_number.data = 8;  
       joy_go_to_point_publisher.publish(joy_go_to_point_published_number);
+
+      joy_publish_timer.start();
     }
 
 
@@ -149,6 +151,8 @@ private:
     {
       desired_angular_velocity  = 0;
       desired_linear_velocity   = 0;
+
+      joy_publish_timer.stop();
     }
 
 
@@ -258,15 +262,14 @@ private:
     }
 
 
+    /*
     //LB
     if(LBpressed == false && joy->buttons[4] == 1)
     {
-      joy_publish_timer.start();
       LBpressed = true;
     }
-    if(LBpressed = true && joy->buttons[4] == 0){LBpressed = false; joy_publish_timer.stop();}
+    if(LBpressed = true && joy->buttons[4] == 0){LBpressed = false;}
 
-    /*
 
     //START button
     if(startpressed == false && joy->buttons[7] == 1)

@@ -258,14 +258,15 @@ private:
     }
 
 
-    /*
     //LB
     if(LBpressed == false && joy->buttons[4] == 1)
     {
+      joy_publish_timer.start();
       LBpressed = true;
     }
-    if(LBpressed = true && joy->buttons[4] == 0){LBpressed = false;}
+    if(LBpressed = true && joy->buttons[4] == 0){LBpressed = false; joy_publish_timer.stop();}
 
+    /*
 
     //START button
     if(startpressed == false && joy->buttons[7] == 1)

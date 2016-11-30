@@ -4,14 +4,17 @@ This is our code for the p1 project. In this file there will be a short introduc
 
 **Use the WIKI section for guides and commands.**
 
-## go_to_point:
+### go_to_point:
 
 This is the code we will use.
+
+## joystick_control:
+
+This node will listen for user-input and determine if it is manual steering, go-to command, save location or emergency stop and fire the nessecary functions.
 
 ## Running the code on the turtlebot (Remember to source the workspace!)
 
 Step 1. Run a roscore by typing `roscore` in the terminal.
-
 
 Step 2. Run turtlebot bringup by typing 
 ```

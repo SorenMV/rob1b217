@@ -1,5 +1,6 @@
-#include "go_to_point.h"
+#include "go_to_point.cpp"
 #include "interface.cpp"
+
 using namespace std;
 
 // This is where we start
@@ -9,7 +10,7 @@ int main(int argc, char *argv[])
 
 	// Conctruct the class "GoToPoint"
 	GoToPoint goTo;
-	Interface inter;
+	Interface interface(goTo.db);
 
 	ros::spin();
 	return 0;

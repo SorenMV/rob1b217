@@ -1,13 +1,32 @@
-#include "go_to_point.h"
-#include "interface.cpp"
+#include <ros/ros.h>
+#include <actionlib/client/simple_action_client.h>
+#include <move_base_msgs/MoveBaseAction.h>
+#include <string>
+#include <sstream>
+#include <iostream>
+#include <fstream>
+#include "std_msgs/UInt16.h"
+#include "tf/transform_listener.h"
 
-
+#define db_size 10
 
 using namespace std;
 	
+class GoToPoint
+{
+private:
+	// Initialize variables
+	ros::NodeHandle go_to_point_nodehandle;
+	move_base_msgs::MoveBaseGoal goal;
+	actionlib::SimpleActionClient<move_base_msgs::MoveBaseAction> client;
+	ros::Subscriber subscribtion_from_joy;
+	tf::TransformListener tf_listener;
+	tf::StampedTransform tf_stamped;
+
+	
 
 	// This function gets called when a coordinate is set and wants to move
-	int GoToPoint::_go_to_point(const move_base_msgs::MoveBaseGoal& goal)
+	int _go_to_point(const move_base_msgs::MoveBaseGoal& goal)
 	{
 		// Wait for the action server to come up
 		int timer=1;
@@ -30,7 +49,7 @@ using namespace std;
 	}
 
 	// This function gets called when actionlib is done navigating to the goal
-	void GoToPoint::_target_reached(const actionlib::SimpleClientGoalState& state)
+	void _target_reached(const actionlib::SimpleClientGoalState& state)
 	{
 		// Check if actionlib "succeeded" navigating to the goal
 		if (state == actionlib::SimpleClientGoalState::SUCCEEDED)
@@ -44,7 +63,7 @@ using namespace std;
 		}
 	}
 
-	void GoToPoint::_init_db()
+	void _init_db()
 	{
 		//Calling the database and naming it inputFile.
 		ifstream inputFile("database/location_database.txt");
@@ -66,7 +85,8 @@ using namespace std;
 				ss >> db[i].y;
 				ss >> db[i].z;
 				ss >> db[i].w;
-				ROS_INFO("Goal(%s, %i): (%f, %f, %f, %f)", db[i].name.c_str(),db[i].key, db[i].x, db[i].y, db[i].z, db[i].w);
+				ROS_INFO("Goal(%s, %i): (%f, %f, %f, %f)", 
+					db[i].name.c_str(),db[i].key, db[i].x, db[i].y, db[i].z, db[i].w);
 				
 				i++;
 			}
@@ -79,7 +99,7 @@ using namespace std;
 	// A command with type "string" gets send and it will look-up to see
 	// if that string is saved.
 
-	void GoToPoint::_callback_from_joy_to_send_goal(const std_msgs::UInt16 subscribed_key)
+	void _callback_from_joy_to_send_goal(const std_msgs::UInt16 subscribed_key)
 	{
 		
 		//Lookup db for subscribed_key and get coordinates. Line by line from the top. 
@@ -159,3 +179,31 @@ using namespace std;
 				client.cancelGoal();  //Christoffer: here
 			}
 	}
+
+public:
+	// Constructor
+	GoToPoint():
+		client("move_base")
+	{
+		// _init_db();
+
+		// coordinate frame. "map" or "base_link"
+		goal.target_pose.header.frame_id = "map";
+
+		// Subscribing to our joystick topic
+		subscribtion_from_joy = go_to_point_nodehandle.subscribe<std_msgs::UInt16>("go_to_point_trigger", 10, &GoToPoint::_callback_from_joy_to_send_goal, this); 
+		
+		ROS_INFO("Started. Listening for commands ...");
+	}
+	
+	//Struct for individual locations are created.
+	struct DBstruct
+	{
+		string name; 
+		uint16_t key;
+		double x, y, z, w;
+	};
+
+	// Array with type DBstruct created
+	struct DBstruct db[db_size];
+};

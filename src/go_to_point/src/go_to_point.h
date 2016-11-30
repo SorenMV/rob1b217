@@ -1,3 +1,6 @@
+#ifndef GO_TO_POINT_INCLUDE
+#define GO_TO_POINT_INCLUDE
+
 #include <ros/ros.h>
 #include <actionlib/client/simple_action_client.h>
 #include <move_base_msgs/MoveBaseAction.h>
@@ -8,14 +11,10 @@
 #include "std_msgs/UInt16.h"
 #include "tf/transform_listener.h"
 
-#ifndef GO_TO_POINT_INCLUDE
-#define GO_TO_POINT_INCLUDE
-
-/* Your function statement here */
-
 #define db_size 10
 
 using namespace std;
+
 class GoToPoint
 {
 private:
@@ -48,11 +47,10 @@ private:
 	
 public:
 	// Constructor
-		// Constructor
 	GoToPoint():
 		client("move_base")
 	{
-		_init_db();
+		// _init_db();
 
 		// coordinate frame. "map" or "base_link"
 		goal.target_pose.header.frame_id = "map";
@@ -61,8 +59,6 @@ public:
 		subscribtion_from_joy = go_to_point_nodehandle.subscribe<std_msgs::UInt16>("go_to_point_trigger", 10, &GoToPoint::_callback_from_joy_to_send_goal, this); 
 		
 		ROS_INFO("Started. Listening for commands ...");
-
-
 	}
 
 };

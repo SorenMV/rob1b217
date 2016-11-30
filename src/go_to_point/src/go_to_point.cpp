@@ -6,11 +6,14 @@
 #include <iostream>
 #include <fstream>
 #include "std_msgs/UInt16.h"
+#include "tf/transform_listener.h"
+
+
 
 #define db_size 10
 
 using namespace std;
-
+	
 
 class GoToPoint
 {
@@ -20,6 +23,8 @@ private:
 	move_base_msgs::MoveBaseGoal goal;
 	actionlib::SimpleActionClient<move_base_msgs::MoveBaseAction> client;
 	ros::Subscriber subscribtion_from_joy;
+	tf::TransformListener tf_listener;
+	tf::StampedTransform tf_stamped;
 
 	//Struct for individual locations are created.
 	struct DBstruct
@@ -92,8 +97,7 @@ private:
 				ss >> db[i].y;
 				ss >> db[i].z;
 				ss >> db[i].w;
-				ROS_INFO("Goal(%s, %i): (%f, %f, %f, %f)", 
-					db[i].name.c_str(),db[i].key, db[i].x, db[i].y, db[i].z, db[i].w);
+				ROS_INFO("Goal(%s, %i): (%f, %f, %f, %f)", db[i].name.c_str(),db[i].key, db[i].x, db[i].y, db[i].z, db[i].w);
 				
 				i++;
 			}
@@ -124,8 +128,7 @@ private:
 				goal.target_pose.pose.orientation.w = db[i].w;
 
 				//"cout" the coordinates and the name of the location
-				ROS_INFO("Going to: %s(%i): (%f, %f, %f, %f)", 
-					db[i].name.c_str(), db[i].key, db[i].x, db[i].y, db[i].z, db[i].w);
+				ROS_INFO("Going to: %s(%i): (%f, %f, %f, %f)", db[i].name.c_str(), db[i].key, db[i].x, db[i].y, db[i].z, db[i].w);
 
 				// Send coordinates to next function
 				_go_to_point(goal);
@@ -137,15 +140,31 @@ private:
 		//Save location
 		if(subscribed_key.data>=4 && subscribed_key.data<=7)  
 		{
-		geometry_msgs::Pose pBase;
+			try 
+				{
+		   		tf_listener.waitForTransform("/map", "/base_link", ros::Time(0), ros::Duration(10.0) );
+					tf_listener.lookupTransform("/map", "/base_link", ros::Time(), tf_stamped);
+				}
+
+			catch 
+				(
+					tf::TransformException ex) {
+				   ROS_ERROR("%s",ex.what());
+				}
+
+
+
+
+
+
 		for (int i = 0; i < db_size; ++i)
 		{
 			if(i == (subscribed_key.data-4))
 			{
-				db[i].x = pBase.position.x;
-				db[i].y = pBase.position.y;
-				db[i].z = pBase.orientation.z;
-				db[i].w = pBase.orientation.w;
+				db[i].x = tf_stamped.getOrigin().x();
+				db[i].y = tf_stamped.getOrigin().y();
+				db[i].z = tf_stamped.getRotation().z();
+				db[i].w = tf_stamped.getRotation().w();
 				ROS_INFO("Location saved on line %i (%f, %f, %f, %f)",i, db[i].x, db[i].y, db[i].z, db[i].w);
 			}
 		}
@@ -186,6 +205,8 @@ public:
 		subscribtion_from_joy = go_to_point_nodehandle.subscribe<std_msgs::UInt16>("go_to_point_trigger", 10, &GoToPoint::_callback_from_joy_to_send_goal, this); 
 		
 		ROS_INFO("Started. Listening for commands ...");
+
+
 	}
 };
 

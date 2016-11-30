@@ -125,6 +125,10 @@ private:
     joy_velocity_published_value.linear.x   = current_linear_velocity * linear_velocity;
     joy_velocity_published_value.angular.z  = current_angular_velocity * angular_velocity;
     joy_velocity_publisher.publish(joy_velocity_published_value);
+    if(current_linear_velocity==0 && desired_linear_velocity==0)
+    {
+       joy_publish_timer.stop();
+    }
   }
 
 
@@ -151,8 +155,6 @@ private:
     {
       desired_angular_velocity  = 0;
       desired_linear_velocity   = 0;
-
-      joy_publish_timer.stop();
     }
 
 

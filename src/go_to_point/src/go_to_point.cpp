@@ -1,16 +1,18 @@
 #include <ros/ros.h>
 #include <actionlib/client/simple_action_client.h>
 #include <move_base_msgs/MoveBaseAction.h>
-#include <string>
-#include <sstream>
-#include <iostream>
+//#include <string>
+//#include <sstream>
+//#include <iostream>
 #include <fstream>
+//subscribing from joystick_control
 #include "std_msgs/UInt16.h"
+//getting pose
 #include "tf/transform_listener.h"
 
 
 
-#define db_size 10
+#define db_size 4
 
 using namespace std;
 	
@@ -18,13 +20,13 @@ using namespace std;
 class GoToPoint
 {
 private:
-	// Initialize variables
+	// Initialise variables
 	ros::NodeHandle go_to_point_nodehandle;
 	move_base_msgs::MoveBaseGoal goal;
 	actionlib::SimpleActionClient<move_base_msgs::MoveBaseAction> client;
 	ros::Subscriber subscribtion_from_joy;
-	tf::TransformListener tf_listener;
-	tf::StampedTransform tf_stamped;
+	tf::TransformListener tf_listener; 
+	tf::StampedTransform tf_stamped; 
 
 	//Struct for individual locations are created.
 	struct DBstruct
@@ -152,11 +154,6 @@ private:
 				   ROS_ERROR("%s",ex.what());
 				}
 
-
-
-
-
-
 		for (int i = 0; i < db_size; ++i)
 		{
 			if(i == (subscribed_key.data-4))
@@ -184,7 +181,7 @@ private:
 		}
 		}
 
-		//cancels goal when joystick is moved / back button is pressed
+		//cancels goal when joystick is moved / POWER button is pressed
 		if(subscribed_key.data==8)
 			{
 				client.cancelGoal();  //Christoffer: here

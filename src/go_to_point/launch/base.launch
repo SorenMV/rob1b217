@@ -1,8 +1,25 @@
 <launch>
+
 	<include file="$(find turtlebot_bringup)/launch/minimal.launch" />
 	
-	<!-- roslaunch turtlebot_navigation amcl_demo.launch map_file:=/tmp/my_map.yaml -->
+	
+
 	<include file="$(find turtlebot_navigation)/launch/amcl_demo.launch">
-		<arg name="map_file" value="$(env HOME)/ws/maps/hallway2.yaml" />
+	<arg name="map_file" value="/home/andrej/P1/rob1b217/maps/hallway2.yaml" />
 	</include>
+
+	<include file="$(find turtlebot_rviz_launchers)/launch/view_navigation.launch" />
+
+
+
+	<node pkg="joy" type="joy_node" name="joy_node">
+	<param name="autorepeat_rate" value="10" />
+	</node>
+
+
+
+	<node pkg="joystick_control" type="joystick_control_node" name="joystick_control_node" />
+
+	<node pkg="go_to_point" type="go_to_point_node" name="go_to_point_node" />
+
 </launch>

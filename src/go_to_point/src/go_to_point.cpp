@@ -22,37 +22,31 @@ struct DBstruct
 
 class GoToPoint
 {
-private:
+protected:
 	// Initialize variables
-	ros::NodeHandle go_to_point_nodehandle;
-	move_base_msgs::MoveBaseGoal goal;
 	actionlib::SimpleActionClient<move_base_msgs::MoveBaseAction> client;
+	ros::NodeHandle go_to_point_nodehandle;
 	ros::Subscriber subscribtion_from_joy;
-	tf::TransformListener tf_listener;
-	tf::StampedTransform tf_stamped;
-
+	move_base_msgs::MoveBaseGoal goal;
+	
 	
 	// This function gets called when a coordinate is set and wants to move
-	int _go_to_point(const move_base_msgs::MoveBaseGoal& goal)
+	void _go_to_point(const move_base_msgs::MoveBaseGoal& goal)
 	{
 		// Wait for the action server to come up
-		int timer=1;
+		int timer = 0;
 		while( (!(client.waitForServer(ros::Duration(1.0)))) && (timer <= 3))
 		{
 			ROS_INFO("%i: Waiting for the move_base action server to come up.", timer);
 			++timer;
 			// Check if ros is ok. If NOT ok, then return
 			if(!ros::ok())
-				return 0;
+				return;
 		}
 
 		// Send the goal to actionlib and return to the "callback" function
-		if(timer<3)
-		{
 		client.sendGoal(goal, boost::bind(&GoToPoint::_target_reached, this, _1));
 		ROS_INFO("Navigating ...");
-		return 1;
-		}
 	}
 
 	// This function gets called when actionlib is done navigating to the goal
@@ -136,38 +130,49 @@ private:
 		//Save location
 		if(subscribed_key.data>=4 && subscribed_key.data<=7)  
 		{
+			tf::TransformListener tf_listener;
+			tf::StampedTransform tf_stamped;
 			try 
-				{
-		   		tf_listener.waitForTransform("/map", "/base_link", ros::Time(0), ros::Duration(10.0) );
-					tf_listener.lookupTransform("/map", "/base_link", ros::Time(), tf_stamped);
-				}
-
-			catch 
-				(
-					tf::TransformException ex) {
-				   ROS_ERROR("%s",ex.what());
-				}
-
-
-
-
-
-
-		for (int i = 0; i < db_size; ++i)
-		{
-			if(i == (subscribed_key.data-4))
 			{
-				db[i].x = tf_stamped.getOrigin().x();
-				db[i].y = tf_stamped.getOrigin().y();
-				db[i].z = tf_stamped.getRotation().z();
-				db[i].w = tf_stamped.getRotation().w();
-				ROS_INFO("Location saved on line %i (%f, %f, %f, %f)",i, db[i].x, db[i].y, db[i].z, db[i].w);
+	   			tf_listener.waitForTransform("/map", "/base_link", ros::Time(0), ros::Duration(10.0) );
+				tf_listener.lookupTransform("/map", "/base_link", ros::Time(), tf_stamped);
 			}
+			catch (tf::TransformException ex) 
+			{
+			   	ROS_ERROR("TransformException: %s",ex.what());
+			}
+
+
+			for(int i = 0; i < db_size; ++i)
+			{
+				if(i == (subscribed_key.data-4))
+				{
+					db[i].x = tf_stamped.getOrigin().x();
+					db[i].y = tf_stamped.getOrigin().y();
+					db[i].z = tf_stamped.getRotation().z();
+					db[i].w = tf_stamped.getRotation().w();
+					ROS_INFO("Location saved on line %i (%f, %f, %f, %f)", i, db[i].x, db[i].y, db[i].z, db[i].w);
+				}
+			}
+
+
+			// Save db
+			_save_db();
 		}
+
+		//cancels goal when joystick is moved / back button is pressed
+		if(subscribed_key.data==8)
+		{
+			client.cancelGoal();  //Christoffer: here
+		}
+	}
+
+	void _save_db()
+	{
 		ofstream inputFile("database/location_database.txt");
 		if(inputFile.is_open())
 		{
-			for (int i = 0; i < db_size; ++i)
+			for(int i = 0; i < db_size; ++i)
 			{
 				inputFile << db[i].name <<" "
 					<< i <<" " 
@@ -178,13 +183,10 @@ private:
 			}
 			inputFile.close();
 		}
+		else
+		{
+			ROS_INFO("Failed to save database.");
 		}
-
-		//cancels goal when joystick is moved / back button is pressed
-		if(subscribed_key.data==8)
-			{
-				client.cancelGoal();  //Christoffer: here
-			}
 	}
 
 public:

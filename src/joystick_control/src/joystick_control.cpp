@@ -20,7 +20,7 @@ const float deadman_radius           = 0.15     ;//0-1; 0=always active, 1=never
 
 //maximum velocity; influences acceleration if above the maximum velocity of the Kobuki
       float linear_velocity          = 0.5      ;//0.5 = 0.44m/s
-const float angular_velocity         = 1        ;//we should test this value?
+const float angular_velocity         = 1.5      ;//we should test this value?
 
 //refresh rate of the "joy_publish_timer" timer publishing "geometry_msgs::Twist" message to "mobile_base/commands/velocity" topic
 const float period                   = 0.005    ;//200Hz
@@ -135,12 +135,12 @@ private:
 
 
   //callback function executed each time "sensor_msgs/Joy" topic updates: joystick movements & autorefresh_rate(if set)
-  void joystick_callback(const sensor_msgs::Joy joy) //changed from pointer to normal - check if works
+  void joystick_callback(const sensor_msgs::Joy joy)
   {
 
     //MANUAL STEERING:
     //if gimbal is pushed
-    if (joy.axes[0] > deadman_radius || joy.axes[0] < -deadman_radius || joy.axes[1] > deadman_radius || joy.axes[1] < -deadman_radius)
+    if ((powerpressed == false) && (joy.axes[0] > deadman_radius || joy.axes[0] < -deadman_radius || joy.axes[1] > deadman_radius || joy.axes[1] < -deadman_radius))
     {
       //set desired velocities to mach gimbal values
       desired_angular_velocity  = joy.axes[0];
@@ -155,7 +155,7 @@ private:
     }
 
     //if gimbal is in centre
-    if(joy.axes[0] <= deadman_radius && joy.axes[0] >= -deadman_radius && joy.axes[1] <= deadman_radius && joy.axes[1] >= -deadman_radius)
+    if((powerpressed == true) || (joy.axes[0] <= deadman_radius && joy.axes[0] >= -deadman_radius && joy.axes[1] <= deadman_radius && joy.axes[1] >= -deadman_radius))
     {
       //set desired velocities to 0  
       desired_angular_velocity  = 0;
@@ -170,17 +170,18 @@ private:
       joy_publish_timer.stop();//stop publishing, thus moving
       current_linear_velocity=0;//reset current linear velocity
       current_angular_velocity=0;//reset current angular velocity
-  //check if necessary
-  //   joy_velocity_published_value.angular.z = 0;
-  //   joy_velocity_published_value.linear.x = 0;
-  //   joy_velocity_publisher.publish(joy_velocity_published_value);
+  
+      //stop
+      joy_velocity_published_value.angular.z = 0;
+      joy_velocity_published_value.linear.x = 0;
+      joy_velocity_publisher.publish(joy_velocity_published_value);
 
       //sending cancelGoal request
       joy_go_to_point_published_number.data = 8;  
       joy_go_to_point_publisher.publish(joy_go_to_point_published_number);
-      backpressed = true;
+      powerpressed = true;
     }
-    if(joy.buttons[8] == 0){backpressed = false;}
+    if(joy.buttons[8] == 0){powerpressed = false;}
 
 
 
@@ -264,12 +265,12 @@ private:
     }
 
     //SPEED:  0.5
-    if(powerpressed == false && joy.buttons[6] == 1) //BACK button
+    if(backpressed == false && joy.buttons[6] == 1) //BACK button
     {   
       linear_velocity = 0.5;    
       powerpressed = true;
     }
-    if(powerpressed == true && joy.buttons[6] == 0){powerpressed = false;}
+    if(backpressed == true && joy.buttons[6] == 0){backpressed = false;}
 
     //SPEED:  1
     if(startpressed == false && joy.buttons[7] == 1) //START button

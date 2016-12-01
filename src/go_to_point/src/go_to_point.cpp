@@ -184,7 +184,7 @@ private:
 		//cancels goal when joystick is moved / POWER button is pressed
 		if(subscribed_key.data==8)
 			{
-				client.cancelGoal();  //Christoffer: here
+				client.cancelGoal(); 
 			}
 	}
 	

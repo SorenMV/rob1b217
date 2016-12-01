@@ -48,10 +48,10 @@ public:
   std_msgs::UInt16      joy_go_to_point_published_number   ;//publishing this to "go_to_point"
 
   //is button pressed? variables
-  bool Apressed, Bpressed, Xpressed, Ypressed, LBpressed, RBpressed, backpressed, startpressed, powerpressed, LJpressed, RJpressed;
+  bool Apressed, Bpressed, Xpressed, Ypressed, LBpressed, RBpressed, backpressed, startpressed, powerpressed, LJpressed, RJpressed, emergency_activated;
 
   //speed smoothing variables
-  float current_linear_velocity, current_angular_velocity, desired_linear_velocity, desired_angular_velocity;
+  float current_linear_velocity, desired_linear_velocity, desired_angular_velocity;
 
 
   //CONSTRUCTOR:
@@ -140,7 +140,7 @@ private:
 
     //MANUAL STEERING:
     //if gimbal is pushed
-    if ((powerpressed == false) && (joy.axes[0] > deadman_radius || joy.axes[0] < -deadman_radius || joy.axes[1] > deadman_radius || joy.axes[1] < -deadman_radius))
+    if ((powerpressed == false && emergency_activated == false) && (joy.axes[0] > deadman_radius || joy.axes[0] < -deadman_radius || joy.axes[1] > deadman_radius || joy.axes[1] < -deadman_radius))
     {
       //set desired velocities to mach gimbal values
       desired_angular_velocity  = joy.axes[0];
@@ -155,11 +155,12 @@ private:
     }
 
     //if gimbal is in centre
-    if((powerpressed == true) || (joy.axes[0] <= deadman_radius && joy.axes[0] >= -deadman_radius && joy.axes[1] <= deadman_radius && joy.axes[1] >= -deadman_radius))
+    if(joy.axes[0] <= deadman_radius && joy.axes[0] >= -deadman_radius && joy.axes[1] <= deadman_radius && joy.axes[1] >= -deadman_radius)
     {
       //set desired velocities to 0  
       desired_angular_velocity  = 0;
       desired_linear_velocity   = 0;
+      emergency_activated = false;//return to this default joystick position after emergency break before moving
     }
 
 
@@ -169,7 +170,6 @@ private:
     {
       joy_publish_timer.stop();//stop publishing, thus moving
       current_linear_velocity=0;//reset current linear velocity
-      current_angular_velocity=0;//reset current angular velocity
   
       //stop
       joy_velocity_published_value.angular.z = 0;
@@ -179,6 +179,7 @@ private:
       //sending cancelGoal request
       joy_go_to_point_published_number.data = 8;  
       joy_go_to_point_publisher.publish(joy_go_to_point_published_number);
+      emergency_activated = true;//return to default joystick position after emergency break before moving
       powerpressed = true;
     }
     if(joy.buttons[8] == 0){powerpressed = false;}
@@ -318,7 +319,6 @@ int main(int argc, char** argv)
 // Repeat receiving subscribtion, thus executing callback function
   ros::spin();
 }
-
 
 
 

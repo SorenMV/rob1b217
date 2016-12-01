@@ -16,7 +16,7 @@
 //PLAY WITH VALUES IF YOU DARE!
 
 //distance the joystick gimbal has be offset to allow the manual steering
-const float deadman_radius           = 0.15     ;//0-1; 0=always active, 1=never active
+const float deadman_radius           = 0.1     ;//0-1; 0=always active, 1=never active
 
 //maximum velocity; influences acceleration if above the maximum velocity of the Kobuki
       float linear_velocity          = 0.5      ;//0.5 = 0.44m/s

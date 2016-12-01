@@ -268,7 +268,7 @@ private:
     if(backpressed == false && joy.buttons[6] == 1) //BACK button
     {   
       linear_velocity = 0.5;    
-      powerpressed = true;
+      backpressed = true;
     }
     if(backpressed == true && joy.buttons[6] == 0){backpressed = false;}
 

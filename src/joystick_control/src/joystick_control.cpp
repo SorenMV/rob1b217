@@ -268,7 +268,7 @@ private:
     //SPEED:  0.5
     if(backpressed == false && joy.buttons[6] == 1) //BACK button
     {   
-      linear_velocity = 0.5;    
+      linear_velocity = 0.25;    
       backpressed = true;
     }
     if(backpressed == true && joy.buttons[6] == 0){backpressed = false;}
@@ -276,7 +276,7 @@ private:
     //SPEED:  1
     if(startpressed == false && joy.buttons[7] == 1) //START button
     { 
-      linear_velocity = 1; 
+      linear_velocity = 0.5; 
       startpressed = true;
     } 
     if(startpressed == true && joy.buttons[7] == 0){startpressed = false;}

@@ -51,4 +51,4 @@ roslaunch rosrun go_to_point base.launch
 ## User guide
 The robot has 4 predefined locations: __A__, __B__, __X__, __Y__ on the X-Box controller. 
 
-To save a new location press: `__LB+__<button>` where <button> is any of the aforementioned buttons on the X-Box controller.
+To save a new location press: `LB+<button>` where <button> is any of the aforementioned buttons on the X-Box controller.

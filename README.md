@@ -12,7 +12,7 @@ This is the code we will use.
 
 This node will listen for user-input and determine if it is manual steering, go-to command, save location or emergency stop and fire the nessecary functions.
 
-## Running the code on the turtlebot (Remember to source the workspace!)
+## Running the code on the turtlebot
 
 Step 1. Run turtlebot bringup by typing 
 ```
@@ -37,7 +37,7 @@ roslaunch turtlebot_rviz_launchers view_navigation.launch
 ```
 
 
-Step 5. Run the program by typing:
+Step 5. Source the  Run the program by typing:
 ```
 rosrun go_to_point go_to_point_node
 ```
@@ -48,4 +48,7 @@ or use the roslaunch command:
 ```
 roslaunch rosrun go_to_point base.launch
 ```
-Step 6. The robot has 4 predefined locations: __A__, __B__, __X__, __Y__ on the X-box controller. 
+## User guide
+The robot has 4 predefined locations: __A__, __B__, __X__, __Y__ on the X-Box controller. 
+
+To save a new location press: `__LB+__<button>` where <button> is any of the aforementioned buttons on the X-Box controller.

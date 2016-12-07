@@ -8,7 +8,7 @@ This is our code for the p1 project. In this file there will be a short introduc
 
 This is the code we will use.
 
-## joystick_control:
+### joystick_control:
 
 This node will listen for user-input and determine if it is manual steering, go-to command, save location or emergency stop and fire the nessecary functions.
 

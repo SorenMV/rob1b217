@@ -292,7 +292,10 @@ private:
     //SPEED:  0.25
     if(backpressed == false && joy.buttons[6] == 1) //BACK button
     {   
-      linear_velocity = 0.25;    
+      if(linear_velocity>0.05)
+      {
+      	linear_velocity = linear_velocity - 0.05;  
+      }   
       backpressed = true;
     }
     if(backpressed == true && joy.buttons[6] == 0){backpressed = false;}
@@ -300,7 +303,10 @@ private:
     //SPEED:  0.5
     if(startpressed == false && joy.buttons[7] == 1) //START button
     { 
-      linear_velocity = 0.5; 
+      if(linear_velocity<0.5)
+      {
+      	linear_velocity = linear_velocity + 0.05; 
+      }
       startpressed = true;
     } 
     if(startpressed == true && joy.buttons[7] == 0){startpressed = false;}
@@ -326,7 +332,7 @@ private:
  
     if(RJpressed == false && joy.buttons[10] == 1) //RJ
     {
-      RJpress ed = true;
+      RJpressed = true;
     }
     if(RJpressed == true && joy.buttons[10] == 0){RJpressed = false;}
     */

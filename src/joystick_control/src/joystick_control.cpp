@@ -7,6 +7,8 @@
 //which consists of: geometry_msgs/Vector3 "linear" , geometry_msgs/Vector3 "angular";
 //"geometry_msgs/Vector3" has float "x", float "y" and float "z"
 #include <geometry_msgs/Twist.h>
+#include <kobuki_msgs/BumperEvent.h>
+#include <kobuki_msgs/Sound.h>
 //publishing "std_msgs::UInt16" to go_to_point node
 //which contains: uint16_t "data"
 #include "std_msgs/UInt16.h"
@@ -16,7 +18,7 @@
 //PLAY WITH VALUES IF YOU DARE!
 
 //distance the joystick gimbal has be offset to allow the manual steering
-const float deadman_radius           = 0.1     ;//0-1; 0=always active, 1=never active
+const float deadman_radius           = 0.15     ;//0-1; 0=always active, 1=never active
 
 //maximum velocity; influences acceleration if above the maximum velocity of the Kobuki
       float linear_velocity          = 0.5      ;//0.5 = 0.44m/s
@@ -39,19 +41,23 @@ public:
   //VARIABLES:
   ros::NodeHandle       joy_nodehandle                     ;
   ros::Subscriber       joy_subscriber                     ;//subscriber from "joy" (joystick)
+  ros::Subscriber  	    bumper_subscriber				   ;
   ros::Publisher        joy_velocity_publisher             ;//publisher to "mobile_base/commands/velocity" (Kobuki)
   ros::Publisher        joy_go_to_point_publisher          ;//publisher to "go_to_point"
+  ros::Publisher 		honk_publisher					   ;
   ros::Timer            joy_publish_timer                  ;//timer to continuously publish to "mobile_base/commands/velocity" (Kobuki)  
 
   //message variables
   geometry_msgs::Twist  joy_velocity_published_value       ;//publishing this to "mobile_base/commands/velocity" (Kobuki)
   std_msgs::UInt16      joy_go_to_point_published_number   ;//publishing this to "go_to_point"
+  kobuki_msgs::Sound    honk  				               ;
 
   //is button pressed? variables
   bool Apressed, Bpressed, Xpressed, Ypressed, LBpressed, RBpressed, backpressed, startpressed, powerpressed, LJpressed, RJpressed, emergency_activated;
 
   //speed smoothing variables
   float current_linear_velocity, desired_linear_velocity, desired_angular_velocity;
+
 
 
   //CONSTRUCTOR:
@@ -61,7 +67,9 @@ public:
     //"mobile_base/commands/velocity" is a topic controlling the movement of the mobile base (Kobuki)
     //"this" is used for passing a reference to the instance of the object (in this case it is the class itself)
     joy_subscriber = joy_nodehandle.subscribe<sensor_msgs::Joy>("joy", 10, &joystick_class::joystick_callback, this); 
+    bumper_subscriber = joy_nodehandle.subscribe<kobuki_msgs::BumperEvent>("mobile_base/events/bumper", 10, &joystick_class::bumper_callback, this); 
     joy_velocity_publisher = joy_nodehandle.advertise<geometry_msgs::Twist>("mobile_base/commands/velocity", 1);
+    honk_publisher = joy_nodehandle.advertise<kobuki_msgs::Sound>("mobile_base/commands/sound", 1);
 
     //publising our own topic "go_to_point_trigger" to control the "go_to_point" node
     joy_go_to_point_publisher = joy_nodehandle.advertise<std_msgs::UInt16>("go_to_point_trigger", 1);
@@ -123,7 +131,7 @@ private:
     {
       current_linear_velocity = current_linear_velocity - speed_constant;
     }
-  //END OF SMOOTHING 
+  //END OF SMOOTHING
 
 
     //multiply with maximum speed constants
@@ -131,6 +139,22 @@ private:
     joy_velocity_published_value.angular.z  = desired_angular_velocity * angular_velocity; //current angular = desired angular; no smoothing
     //publish to "mobile_base/commands/velocity" (Kobuki)
     joy_velocity_publisher.publish(joy_velocity_published_value);
+
+    if (current_linear_velocity == 0 && desired_linear_velocity == 0 && desired_angular_velocity == 0)
+    {
+   	  joy_publish_timer.stop();
+    }
+  }
+
+
+  void bumper_callback(const kobuki_msgs::BumperEvent bump)
+  {
+  	if (bump.state == 1)
+  	{
+  	  emergency_activated = true;
+  	  joy_publish_timer.stop();//stop publishing, thus moving
+      current_linear_velocity=0;//reset current linear velocity
+  	}
   }
 
 
@@ -265,32 +289,34 @@ private:
       if(Ypressed == true && joy.buttons[3] == 0){Ypressed = false;}
     }
 
-    //SPEED:  0.5
+    //SPEED:  0.25
     if(backpressed == false && joy.buttons[6] == 1) //BACK button
     {   
-      linear_velocity = 0.5;    
+      linear_velocity = 0.25;    
       backpressed = true;
     }
     if(backpressed == true && joy.buttons[6] == 0){backpressed = false;}
 
-    //SPEED:  1
+    //SPEED:  0.5
     if(startpressed == false && joy.buttons[7] == 1) //START button
     { 
-      linear_velocity = 1; 
+      linear_velocity = 0.5; 
       startpressed = true;
     } 
     if(startpressed == true && joy.buttons[7] == 0){startpressed = false;}
 
 
 
-    /*
-    if(LBpressed == false && joy.buttons[4] == 1) //LB
+    if(joy.buttons[4] == 1) //LB
     {
+   	  honk.value=1;
+      honk_publisher.publish(honk);
       LBpressed = true;  
     }
     if(LBpressed = true && joy.buttons[4] == 0){LBpressed = false;}
 
 
+    /*
     if(LJpressed == false && joy.buttons[9] == 1) //LJ
     {   
       LJpressed = true;

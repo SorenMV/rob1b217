@@ -12,6 +12,18 @@ This is the code we will use.
 
 This node will listen for user-input and determine if it is manual steering, go-to command, save location or emergency stop and fire the nessecary functions.
 
+## Installing the code
+This guide assumes you are using Ubuntu and have ros-kinetic and catkin packages installed.
+
+Go to your ws and clone the repository
+```
+git clone git@github.com:SorenMV/rob1b217.git
+```
+Build the package
+```
+catkin build
+```
+
 ## Running the code on the turtlebot
 
 Step 1. Run turtlebot bringup by typing 
@@ -36,15 +48,21 @@ when it says "odom received" the map is loaded and you're good to go.
 roslaunch turtlebot_rviz_launchers view_navigation.launch
 ```
 
+Step 5. Source the setup file
+```
+source devel/setup.bash
+```
 
-Step 5. Source the  Run the program by typing:
+Step 6. Run the program
+
 ```
 rosrun go_to_point go_to_point_node
 ```
 ```
 rosrun joystick_constrol joystick_constrol_node
 ```
-or use the roslaunch command:
+---
+or use the roslaunch command to skip all steps:
 ```
 roslaunch rosrun go_to_point base.launch
 ```

@@ -6,11 +6,11 @@ This is our code for the p1 project. In this file there will be a short introduc
 
 ### go_to_point:
 
-This is the code we will use.
+This node subscribes to the `joystick_control` and reacts to the diffrent user-inputs and fires the nessecary functions.
 
 ### joystick_control:
 
-This node will listen for user-input and determine if it is manual steering, go-to command, save location or emergency stop and fire the nessecary functions.
+This node will listen for user-input and determine if it is manual steering, go-to command, save location or emergency stop and publishes them to `go_to_point`.
 
 ## Installing the code
 This guide assumes you are using Ubuntu and have ros-kinetic and catkin packages installed.

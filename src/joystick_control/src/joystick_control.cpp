@@ -25,10 +25,10 @@ const float deadman_radius           = 0.15     ;//0-1; 0=always active, 1=never
 const float angular_velocity         = 1.5      ;//this value is adequate
 
 //refresh rate of the "joy_publish_timer" timer publishing "geometry_msgs::Twist" message to "mobile_base/commands/velocity" topic
-const float period                   = 0.02    ;//50Hz
+const float period                   = 0.02     ;//50Hz
 
 //directly influeces acceleration/deceleration
-const float speed_constant           = 0.01   ;//(+/-0.01% each iteration); from 0 to max speed in 2 seconds if "linear_velocity" does not exceed maximum velocity of the Kobuki
+const float speed_constant           = 0.01     ;//(+/-0.01% each iteration); from 0 to max speed in 2 seconds if "linear_velocity" does not exceed maximum velocity of the Kobuki
 
 //makes deceleration faster
 const float deceleration_multiplier  = 1        ;//1 to be same as acceleration, >1 to decelerate faster

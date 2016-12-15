@@ -212,6 +212,6 @@ int main(int argc, char *argv[])
 	// Conctruct the class "GoToPoint"
 	GoToPoint goTo;
 
-	ros::spin();
+	ros::spin();//loop until closed
 	return 0;
 }

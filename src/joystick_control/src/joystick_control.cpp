@@ -7,7 +7,9 @@
 //which consists of: geometry_msgs/Vector3 "linear" , geometry_msgs/Vector3 "angular";
 //"geometry_msgs/Vector3" has float "x", float "y" and float "z"
 #include <geometry_msgs/Twist.h>
+//we need this one to see if bumper sensor is activated
 #include <kobuki_msgs/BumperEvent.h>
+//we need this one to honk the horn
 #include <kobuki_msgs/Sound.h>
 //publishing "std_msgs::UInt16" to go_to_point node
 //which contains: uint16_t "data"
@@ -15,20 +17,18 @@
 
 
 
-//PLAY WITH VALUES IF YOU DARE!
-
 //distance the joystick gimbal has be offset to allow the manual steering
 const float deadman_radius           = 0.15     ;//0-1; 0=always active, 1=never active
 
 //maximum velocity; influences acceleration if above the maximum velocity of the Kobuki
       float linear_velocity          = 0.5      ;//0.5 = 0.44m/s
-const float angular_velocity         = 1.5      ;//we should test this value?
+const float angular_velocity         = 1.5      ;//this value is adequate
 
 //refresh rate of the "joy_publish_timer" timer publishing "geometry_msgs::Twist" message to "mobile_base/commands/velocity" topic
-const float period                   = 0.005    ;//200Hz
+const float period                   = 0.02    ;//50Hz
 
 //directly influeces acceleration/deceleration
-const float speed_constant           = 0.0025   ;//(+/-0.0025% each iteration); from 0 to max speed in 2 seconds if "linear_velocity" does not exceed maximum velocity of the Kobuki
+const float speed_constant           = 0.01   ;//(+/-0.01% each iteration); from 0 to max speed in 2 seconds if "linear_velocity" does not exceed maximum velocity of the Kobuki
 
 //makes deceleration faster
 const float deceleration_multiplier  = 1        ;//1 to be same as acceleration, >1 to decelerate faster
@@ -41,19 +41,19 @@ public:
   //VARIABLES:
   ros::NodeHandle       joy_nodehandle                     ;
   ros::Subscriber       joy_subscriber                     ;//subscriber from "joy" (joystick)
-  ros::Subscriber  	    bumper_subscriber				   ;
+  ros::Subscriber  	bumper_subscriber			     ;//subscriber from "mobile_base/events/bumper" (bumper)
   ros::Publisher        joy_velocity_publisher             ;//publisher to "mobile_base/commands/velocity" (Kobuki)
   ros::Publisher        joy_go_to_point_publisher          ;//publisher to "go_to_point"
-  ros::Publisher 		honk_publisher					   ;
+  ros::Publisher 		honk_publisher			     ;//publisher to "mobile_base/commands/sound" (horn)
   ros::Timer            joy_publish_timer                  ;//timer to continuously publish to "mobile_base/commands/velocity" (Kobuki)  
 
   //message variables
   geometry_msgs::Twist  joy_velocity_published_value       ;//publishing this to "mobile_base/commands/velocity" (Kobuki)
   std_msgs::UInt16      joy_go_to_point_published_number   ;//publishing this to "go_to_point"
-  kobuki_msgs::Sound    honk  				               ;
+  kobuki_msgs::Sound    honk  				     ;//publishing this to "mobile_base/commands/sound" (horn)
 
   //is button pressed? variables
-  bool Apressed, Bpressed, Xpressed, Ypressed, LBpressed, RBpressed, backpressed, startpressed, powerpressed, LJpressed, RJpressed, emergency_activated;
+  bool Apressed, Bpressed, Xpressed, Ypressed, backpressed, startpressed, emergency_activated;
 
   //speed smoothing variables
   float current_linear_velocity, desired_linear_velocity, desired_angular_velocity;
@@ -65,16 +65,14 @@ public:
   {
     //"joy" is the joystick input topic
     //"mobile_base/commands/velocity" is a topic controlling the movement of the mobile base (Kobuki)
-    //"this" is used for passing a reference to the instance of the object (in this case it is the class itself)
     joy_subscriber = joy_nodehandle.subscribe<sensor_msgs::Joy>("joy", 10, &joystick_class::joystick_callback, this); 
     bumper_subscriber = joy_nodehandle.subscribe<kobuki_msgs::BumperEvent>("mobile_base/events/bumper", 10, &joystick_class::bumper_callback, this); 
+ 
     joy_velocity_publisher = joy_nodehandle.advertise<geometry_msgs::Twist>("mobile_base/commands/velocity", 1);
     honk_publisher = joy_nodehandle.advertise<kobuki_msgs::Sound>("mobile_base/commands/sound", 1);
-
     //publising our own topic "go_to_point_trigger" to control the "go_to_point" node
     joy_go_to_point_publisher = joy_nodehandle.advertise<std_msgs::UInt16>("go_to_point_trigger", 1);
-
-
+    
     //periodically publishing "mobile_base/commands/velocity" to make the movement smooth
     joy_publish_timer = joy_nodehandle.createTimer(ros::Duration(period),  &joystick_class::publishing, this);
   }
@@ -96,7 +94,7 @@ private:
           joy_publish_timer.stop();//stop publishing
         }
         else
-        { //othervise subtract speed
+        { //otherwise subtract speed
           current_linear_velocity = current_linear_velocity - speed_constant * deceleration_multiplier;
         }
       }
@@ -111,7 +109,7 @@ private:
           joy_publish_timer.stop();//stop publishing
         }
         else
-        { //othervise add speed
+        { //otherwise add speed
           current_linear_velocity = current_linear_velocity + speed_constant * deceleration_multiplier;
         }
       }
@@ -142,18 +140,18 @@ private:
 
     if (current_linear_velocity == 0 && desired_linear_velocity == 0 && desired_angular_velocity == 0)
     {
-   	  joy_publish_timer.stop();
+   	  joy_publish_timer.stop(); //stop timer to increase efficiency
     }
   }
 
 
   void bumper_callback(const kobuki_msgs::BumperEvent bump)
   {
-  	if (bump.state == 1)
+  	if (bump.state == 1) //if bumper sensor is activated
   	{
   	  emergency_activated = true;
   	  joy_publish_timer.stop();//stop publishing, thus moving
-      current_linear_velocity=0;//reset current linear velocity
+        current_linear_velocity=0;//reset current linear velocity
   	}
   }
 
@@ -161,7 +159,24 @@ private:
   //callback function executed each time "sensor_msgs/Joy" topic updates: joystick movements & autorefresh_rate(if set)
   void joystick_callback(const sensor_msgs::Joy joy)
   {
+    //emergency stop + cancelGoal 
+    if(joy.buttons[8] == 1) //POWER button
+    {
+      joy_publish_timer.stop();//stop publishing, thus moving
+      current_linear_velocity=0;//reset current linear velocity
+  
+      //stop
+      joy_velocity_published_value.angular.z = 0;
+      joy_velocity_published_value.linear.x = 0;
+      joy_velocity_publisher.publish(joy_velocity_published_value);
 
+      //sending cancelGoal request
+      joy_go_to_point_published_number.data = 8;  
+      joy_go_to_point_publisher.publish(joy_go_to_point_published_number);
+      emergency_activated = true;//return to default joystick position after emergency break before moving
+    }
+
+        
     //MANUAL STEERING:
     //if gimbal is pushed
     if ((powerpressed == false && emergency_activated == false) && (joy.axes[0] > deadman_radius || joy.axes[0] < -deadman_radius || joy.axes[1] > deadman_radius || joy.axes[1] < -deadman_radius))
@@ -189,27 +204,6 @@ private:
 
 
     //BUTTONS:
-    //emergency stop + cancelGoal 
-    if(joy.buttons[8] == 1) //POWER button
-    {
-      joy_publish_timer.stop();//stop publishing, thus moving
-      current_linear_velocity=0;//reset current linear velocity
-  
-      //stop
-      joy_velocity_published_value.angular.z = 0;
-      joy_velocity_published_value.linear.x = 0;
-      joy_velocity_publisher.publish(joy_velocity_published_value);
-
-      //sending cancelGoal request
-      joy_go_to_point_published_number.data = 8;  
-      joy_go_to_point_publisher.publish(joy_go_to_point_published_number);
-      emergency_activated = true;//return to default joystick position after emergency break before moving
-      powerpressed = true;
-    }
-    if(joy.buttons[8] == 0){powerpressed = false;}
-
-
-
     //Location buttons
     if(joy.buttons[5] == 0) //RB
     {
@@ -289,7 +283,7 @@ private:
       if(Ypressed == true && joy.buttons[3] == 0){Ypressed = false;}
     }
 
-    //SPEED:  0.25
+    //Decrease speed
     if(backpressed == false && joy.buttons[6] == 1) //BACK button
     {   
       if(linear_velocity>0.05)
@@ -300,7 +294,7 @@ private:
     }
     if(backpressed == true && joy.buttons[6] == 0){backpressed = false;}
 
-    //SPEED:  0.5
+    //Increase speed
     if(startpressed == false && joy.buttons[7] == 1) //START button
     { 
       if(linear_velocity<0.5)
@@ -315,27 +309,11 @@ private:
 
     if(joy.buttons[4] == 1) //LB
     {
-   	  honk.value=1;
+   	honk.value=1;
       honk_publisher.publish(honk);
       LBpressed = true;  
     }
     if(LBpressed = true && joy.buttons[4] == 0){LBpressed = false;}
-
-
-    /*
-    if(LJpressed == false && joy.buttons[9] == 1) //LJ
-    {   
-      LJpressed = true;
-    }
-    if(LJpressed == true && joy.buttons[9] == 0){LJpressed = false;}
-
- 
-    if(RJpressed == false && joy.buttons[10] == 1) //RJ
-    {
-      RJpressed = true;
-    }
-    if(RJpressed == true && joy.buttons[10] == 0){RJpressed = false;}
-    */
   }
 };
 
@@ -346,14 +324,11 @@ int main(int argc, char** argv)
   ros::init(argc, argv, "joystick_control");
 
 // Conctruct the class "joystick_class"
-  joystick_class Candy;
+  joystick_class Chukwa_joy;
 
 // Repeat receiving subscribtion, thus executing callback function
   ros::spin();
 }
-
-
-
 
 
 

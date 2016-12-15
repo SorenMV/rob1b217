@@ -179,7 +179,7 @@ private:
         
     //MANUAL STEERING:
     //if gimbal is pushed
-    if ((powerpressed == false && emergency_activated == false) && (joy.axes[0] > deadman_radius || joy.axes[0] < -deadman_radius || joy.axes[1] > deadman_radius || joy.axes[1] < -deadman_radius))
+    if ((emergency_activated == false) && (joy.axes[0] > deadman_radius || joy.axes[0] < -deadman_radius || joy.axes[1] > deadman_radius || joy.axes[1] < -deadman_radius))
     {
       //set desired velocities to mach gimbal values
       desired_angular_velocity  = joy.axes[0];
@@ -311,9 +311,7 @@ private:
     {
    	honk.value=1;
       honk_publisher.publish(honk);
-      LBpressed = true;  
     }
-    if(LBpressed = true && joy.buttons[4] == 0){LBpressed = false;}
   }
 };
 

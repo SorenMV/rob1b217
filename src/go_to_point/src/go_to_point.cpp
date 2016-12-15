@@ -196,7 +196,7 @@ public:
 		goal.target_pose.header.frame_id = "map";
 
 		// Subscribing to our joystick topic
-		subscribtion_from_joy = go_to_point_nodehandle.subscribe<std_msgs::UInt16>("go_to_point_trigger", 10, &GoToPoint::_callback_from_joy_to_send_goal, this); 
+		subscribtion_from_joy = go_to_point_nodehandle.subscribe<std_msgs::UInt16>("go_to_point_trigger", 10, &GoToPoint::_callback_from_joy, this); 
 		
 		ROS_INFO("Started. Listening for commands ...");
 

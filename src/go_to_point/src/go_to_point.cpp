@@ -1,18 +1,12 @@
 #include <ros/ros.h>
-#include <actionlib/client/simple_action_client.h>
-#include <move_base_msgs/MoveBaseAction.h>
-//#include <string>
-//#include <sstream>
-//#include <iostream>
-#include <fstream>
-//subscribing from joystick_control
-#include "std_msgs/UInt16.h"
-//getting pose
-#include "tf/transform_listener.h"
+#include <fstream> //data file
+#include <actionlib/client/simple_action_client.h> //set of functions; we send goal through it
+#include <move_base_msgs/MoveBaseAction.h> //message containing goal coordinated
+#include "std_msgs/UInt16.h" //message used to subscribe from joystick_control
+#include "tf/transform_listener.h" //get current location
 
 
-
-#define db_size 4
+#define db_size 4 //number of saved locations
 
 using namespace std;
 	
@@ -33,7 +27,7 @@ private:
 	{
 		string name; 
 		uint16_t key;
-		double x, y, z, w;
+		double x, y, z, w; //x,y for position ; z,w for orientation
 	};
 
 	// Array with type DBstruct created
@@ -72,7 +66,7 @@ private:
 		}
 		else
 		{
-			// This can be because of obsticles making it impossible to get to goal.
+			// This can be because of obstacles making it impossible to get to goal.
 			ROS_INFO("Failed to reach target.");
 		}
 	}
@@ -109,14 +103,13 @@ private:
 	}
 
 	// This function gets called when a key is pressed
-	// A command with type "string" gets send and it will look-up to see
-	// if that string is saved.
 
-	void _callback_from_joy_to_send_goal(const std_msgs::UInt16 subscribed_key)
+	void _callback_from_joy(const std_msgs::UInt16 subscribed_key)
 	{
 		
 		//Lookup db for subscribed_key and get coordinates. Line by line from the top. 
 		ROS_INFO("%i", subscribed_key.data);
+		// go to point
 		if(subscribed_key.data<=3)
 		{
 		for (int i = 0; i < db_size; ++i)
@@ -129,7 +122,7 @@ private:
 				goal.target_pose.pose.orientation.z = db[i].z;
 				goal.target_pose.pose.orientation.w = db[i].w;
 
-				//"cout" the coordinates and the name of the location
+				//output the coordinates and the name of the location
 				ROS_INFO("Going to: %s(%i): (%f, %f, %f, %f)", db[i].name.c_str(), db[i].key, db[i].x, db[i].y, db[i].z, db[i].w);
 
 				// Send coordinates to next function
@@ -142,6 +135,7 @@ private:
 		//Save location
 		if(subscribed_key.data>=4 && subscribed_key.data<=7)  
 		{
+			//get current pose:
 			try 
 				{
 		   		tf_listener.waitForTransform("/map", "/base_link", ros::Time(0), ros::Duration(10.0) );
@@ -152,12 +146,14 @@ private:
 				(
 					tf::TransformException ex) {
 				   ROS_ERROR("%s",ex.what());
+				
 				}
 
 		for (int i = 0; i < db_size; ++i)
 		{
 			if(i == (subscribed_key.data-4))
 			{
+				//put current coordinates ino array
 				db[i].x = tf_stamped.getOrigin().x();
 				db[i].y = tf_stamped.getOrigin().y();
 				db[i].z = tf_stamped.getRotation().z();
@@ -170,6 +166,7 @@ private:
 		{
 			for (int i = 0; i < db_size; ++i)
 			{
+				//save new coordinates
 				inputFile << db[i].name <<" "
 					<< i <<" " 
 					<< db[i].x <<" " 

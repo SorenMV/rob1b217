@@ -9,7 +9,7 @@ int main(int argc, char *argv[])
 	ros::init(argc, argv, "go_to_point");
 
 	// Conctruct the class "GoToPoint"
-	// GoToPoint goTo;
+	//GoToPoint goTo;
 	Interface inter;
 
 	ros::spin();

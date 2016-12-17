@@ -8,8 +8,10 @@
 //"geometry_msgs/Vector3" has float "x", float "y" and float "z"
 #include <geometry_msgs/Twist.h>
 //we need this one to see if bumper sensor is activated
+//topic - "mobile_base/events/bumper"
 #include <kobuki_msgs/BumperEvent.h>
 //we need this one to honk the horn
+//topic - "mobile_base/commands/sound"
 #include <kobuki_msgs/Sound.h>
 //publishing "std_msgs::UInt16" to go_to_point node
 //which contains: uint16_t "data"
@@ -38,19 +40,19 @@ const float deceleration_multiplier  = 1        ;//1 to be same as acceleration,
 class joystick_class
 {
 public:
-  //VARIABLES:
+ //VARIABLES:
   ros::NodeHandle       joy_nodehandle                     ;
   ros::Subscriber       joy_subscriber                     ;//subscriber from "joy" (joystick)
-  ros::Subscriber  	bumper_subscriber			     ;//subscriber from "mobile_base/events/bumper" (bumper)
+  ros::Subscriber  			bumper_subscriber			   	 			   ;//subscriber from "mobile_base/events/bumper" (bumper)
   ros::Publisher        joy_velocity_publisher             ;//publisher to "mobile_base/commands/velocity" (Kobuki)
   ros::Publisher        joy_go_to_point_publisher          ;//publisher to "go_to_point"
-  ros::Publisher 		honk_publisher			     ;//publisher to "mobile_base/commands/sound" (horn)
+  ros::Publisher 				horn_publisher			     				   ;//publisher to "mobile_base/commands/sound" (horn)
   ros::Timer            joy_publish_timer                  ;//timer to continuously publish to "mobile_base/commands/velocity" (Kobuki)  
 
   //message variables
   geometry_msgs::Twist  joy_velocity_published_value       ;//publishing this to "mobile_base/commands/velocity" (Kobuki)
   std_msgs::UInt16      joy_go_to_point_published_number   ;//publishing this to "go_to_point"
-  kobuki_msgs::Sound    honk  				     ;//publishing this to "mobile_base/commands/sound" (horn)
+  kobuki_msgs::Sound    horn  				     						     ;//publishing this to "mobile_base/commands/sound" (horn)
 
   //is button pressed? variables
   bool Apressed, Bpressed, Xpressed, Ypressed, backpressed, startpressed, emergency_activated;
@@ -63,19 +65,25 @@ public:
   //CONSTRUCTOR:
   joystick_class()
   {
+   //SUBSCRIBERS:
     //"joy" is the joystick input topic
-    //"mobile_base/commands/velocity" is a topic controlling the movement of the mobile base (Kobuki)
-    joy_subscriber = joy_nodehandle.subscribe<sensor_msgs::Joy>("joy", 10, &joystick_class::joystick_callback, this); 
+    joy_subscriber = joy_nodehandle.subscribe<sensor_msgs::Joy>("joy", 10, &joystick_class::joystick_callback, this);
+    //"mobile_base/events/bumper" is topic getting readings from bumper
     bumper_subscriber = joy_nodehandle.subscribe<kobuki_msgs::BumperEvent>("mobile_base/events/bumper", 10, &joystick_class::bumper_callback, this); 
  
+ 	 //PUBLISHERS:
+ 		//"mobile_base/commands/velocity" is topic controlling the movement of the mobile base (Kobuki)
     joy_velocity_publisher = joy_nodehandle.advertise<geometry_msgs::Twist>("mobile_base/commands/velocity", 1);
-    honk_publisher = joy_nodehandle.advertise<kobuki_msgs::Sound>("mobile_base/commands/sound", 1);
     //publising our own topic "go_to_point_trigger" to control the "go_to_point" node
     joy_go_to_point_publisher = joy_nodehandle.advertise<std_msgs::UInt16>("go_to_point_trigger", 1);
+    //"mobile_base/commands/sound" is topic playing sound (honking the horn) from mobile base (Kobuki)
+    horn_publisher = joy_nodehandle.advertise<kobuki_msgs::Sound>("mobile_base/commands/sound", 1);
     
+   //TIMER:
     //periodically publishing "mobile_base/commands/velocity" to make the movement smooth
     joy_publish_timer = joy_nodehandle.createTimer(ros::Duration(period),  &joystick_class::publishing, this);
   }
+
 
 
 private:
@@ -91,7 +99,6 @@ private:
         if (current_linear_velocity <= speed_constant)
         {
           current_linear_velocity = 0;
-          joy_publish_timer.stop();//stop publishing
         }
         else
         { //otherwise subtract speed
@@ -106,7 +113,6 @@ private:
         if (current_linear_velocity >= (-1)*speed_constant)
         {
           current_linear_velocity = 0;
-          joy_publish_timer.stop();//stop publishing
         }
         else
         { //otherwise add speed
@@ -145,15 +151,17 @@ private:
   }
 
 
+  //callback function executed each time "mobile_base/events/bumper" topic updates
   void bumper_callback(const kobuki_msgs::BumperEvent bump)
   {
   	if (bump.state == 1) //if bumper sensor is activated
   	{
   	  emergency_activated = true;
   	  joy_publish_timer.stop();//stop publishing, thus moving
-        current_linear_velocity=0;//reset current linear velocity
+      current_linear_velocity=0;//reset current linear velocity
   	}
   }
+
 
 
   //callback function executed each time "sensor_msgs/Joy" topic updates: joystick movements & autorefresh_rate(if set)
@@ -177,7 +185,7 @@ private:
     }
 
         
-    //MANUAL STEERING:
+   //MANUAL STEERING:
     //if gimbal is pushed
     if ((emergency_activated == false) && (joy.axes[0] > deadman_radius || joy.axes[0] < -deadman_radius || joy.axes[1] > deadman_radius || joy.axes[1] < -deadman_radius))
     {
@@ -203,7 +211,7 @@ private:
     }
 
 
-    //BUTTONS:
+   //BUTTONS:
     //Location buttons
     if(joy.buttons[5] == 0) //RB
     {
@@ -306,11 +314,11 @@ private:
     if(startpressed == true && joy.buttons[7] == 0){startpressed = false;}
 
 
-
+    //honkin the horn
     if(joy.buttons[4] == 1) //LB
     {
-   	honk.value=1;
-      honk_publisher.publish(honk);
+   	  horn.value=1;
+      horn_publisher.publish(horn);
     }
   }
 };
@@ -324,7 +332,7 @@ int main(int argc, char** argv)
 // Conctruct the class "joystick_class"
   joystick_class Chukwa_joy;
 
-// Repeat receiving subscribtion, thus executing callback function
+// Loop, repeat receiving subscribtion, thus executing callback functions each time topic is updated
   ros::spin();
 }
 

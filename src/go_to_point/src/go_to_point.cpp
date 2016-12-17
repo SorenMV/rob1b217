@@ -136,46 +136,37 @@ private:
 		if(subscribed_key.data>=4 && subscribed_key.data<=7)  
 		{
 			//get current pose:
-			try 
-				{
-		   		tf_listener.waitForTransform("/map", "/base_link", ros::Time(0), ros::Duration(10.0) );
-					tf_listener.lookupTransform("/map", "/base_link", ros::Time(), tf_stamped);
-				}
+		   	tf_listener.waitForTransform("/map", "/base_link", ros::Time(0), ros::Duration(10.0) );
+			tf_listener.lookupTransform("/map", "/base_link", ros::Time(), tf_stamped);
 
-			catch 
-				(
-					tf::TransformException ex) {
-				   ROS_ERROR("%s",ex.what());
-				
-				}
 
-		for (int i = 0; i < db_size; ++i)
-		{
-			if(i == (subscribed_key.data-4))
-			{
-				//put current coordinates ino array
-				db[i].x = tf_stamped.getOrigin().x();
-				db[i].y = tf_stamped.getOrigin().y();
-				db[i].z = tf_stamped.getRotation().z();
-				db[i].w = tf_stamped.getRotation().w();
-				ROS_INFO("Location saved on line %i (%f, %f, %f, %f)",i, db[i].x, db[i].y, db[i].z, db[i].w);
-			}
-		}
-		ofstream inputFile("database/location_database.txt");
-		if(inputFile.is_open())
-		{
 			for (int i = 0; i < db_size; ++i)
 			{
-				//save new coordinates
-				inputFile << db[i].name <<" "
+				if(i == (subscribed_key.data-4))
+				{
+					//put current coordinates ino array
+					db[i].x = tf_stamped.getOrigin().x();
+					db[i].y = tf_stamped.getOrigin().y();
+					db[i].z = tf_stamped.getRotation().z();
+					db[i].w = tf_stamped.getRotation().w();
+					ROS_INFO("Location saved on line %i (%f, %f, %f, %f)",i, db[i].x, db[i].y, db[i].z, db[i].w);
+				}
+			}
+			ofstream inputFile("database/location_database.txt");
+			if(inputFile.is_open())
+			{
+				for (int i = 0; i < db_size; ++i)
+				{
+					//save new coordinates
+					inputFile << db[i].name <<" "
 					<< i <<" " 
 					<< db[i].x <<" " 
 					<< db[i].y <<" " 
 					<< db[i].z <<" " 
 					<< db[i].w <<"\n";
+				}
+				inputFile.close();
 			}
-			inputFile.close();
-		}
 		}
 
 		//cancels goal when joystick is moved / POWER button is pressed
@@ -210,7 +201,7 @@ int main(int argc, char *argv[])
 	ros::init(argc, argv, "go_to_point");
 
 	// Conctruct the class "GoToPoint"
-	GoToPoint goTo;
+	GoToPoint Chukwa_go;
 
 	ros::spin();//loop until closed
 	return 0;

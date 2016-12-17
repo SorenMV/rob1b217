@@ -1,25 +1,18 @@
 <launch>
-
 	<include file="$(find turtlebot_bringup)/launch/minimal.launch" />
 	
-	
-
 	<include file="$(find turtlebot_navigation)/launch/amcl_demo.launch">
-	<arg name="map_file" value="$(find go_to_point)/rob1b217/maps/hallway2.yaml" />
+	<arg name="map_file" value="/home/andrej/P1/rob1b217/maps/hallway2.yaml" />
 	</include>
 
-	<include file="$(find turtlebot_rviz_launchers)/launch/view_navigation.launch" />
-
-
+	<param name="/move_base/DWAPlannerROS/max_trans_vel" value="0.424" />
+	<param name="/move_base/DWAPlannerROS/acc_lim_x" value="0.525" />
+	<param name="/move_base/DWAPlannerROS/max_rot_vel" value="1.57" />
 
 	<node pkg="joy" type="joy_node" name="joy_node">
-	<param name="autorepeat_rate" value="10" />
 	</node>
 
 
-
 	<node pkg="joystick_control" type="joystick_control_node" name="joystick_control_node" />
-
 	<node pkg="go_to_point" type="go_to_point_node" name="go_to_point_node" />
-
 </launch>

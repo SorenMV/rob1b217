@@ -43,16 +43,16 @@ public:
  //VARIABLES:
   ros::NodeHandle       joy_nodehandle                   ;
   ros::Subscriber       joy_subscriber                   ;//subscriber from "joy" (joystick)
-  ros::Subscriber  	bumper_subscriber			   ;//subscriber from "mobile_base/events/bumper" (bumper)
+  ros::Subscriber       bumper_subscriber                ;//subscriber from "mobile_base/events/bumper" (bumper)
   ros::Publisher        joy_velocity_publisher           ;//publisher to "mobile_base/commands/velocity" (Kobuki)
   ros::Publisher        joy_go_to_point_publisher        ;//publisher to "go_to_point"
-  ros::Publisher 	      horn_publisher			   ;//publisher to "mobile_base/commands/sound" (horn)
+  ros::Publisher        horn_publisher                   ;//publisher to "mobile_base/commands/sound" (horn)
   ros::Timer            joy_publish_timer                ;//timer to continuously publish to "mobile_base/commands/velocity" (Kobuki)  
 
   //message variables
   geometry_msgs::Twist  joy_velocity_published_value     ;//publishing this to "mobile_base/commands/velocity" (Kobuki)
   std_msgs::UInt16      joy_go_to_point_published_number ;//publishing this to "go_to_point"
-  kobuki_msgs::Sound    horn  				   ;//publishing this to "mobile_base/commands/sound" (horn)
+  kobuki_msgs::Sound    horn                             ;//publishing this to "mobile_base/commands/sound" (horn)
 
   //is button pressed? variables
   bool Apressed, Bpressed, Xpressed, Ypressed, backpressed, startpressed, emergency_activated ;
@@ -70,7 +70,7 @@ public:
     joy_subscriber = joy_nodehandle.subscribe<sensor_msgs::Joy>("joy", 10, &joystick_class::joystick_callback, this);
     //"mobile_base/events/bumper" is topic getting readings from bumper
     bumper_subscriber = joy_nodehandle.subscribe<kobuki_msgs::BumperEvent>("mobile_base/events/bumper", 10, &joystick_class::bumper_callback, this); 
- 
+
    //PUBLISHERS:
     //"mobile_base/commands/velocity" is topic controlling the movement of the mobile base (Kobuki)
     joy_velocity_publisher = joy_nodehandle.advertise<geometry_msgs::Twist>("mobile_base/commands/velocity", 1);
@@ -146,7 +146,7 @@ private:
 
     if (current_linear_velocity == 0 && desired_linear_velocity == 0 && desired_angular_velocity == 0)
     {
-   	joy_publish_timer.stop(); //stop timer to increase efficiency
+      joy_publish_timer.stop(); //stop timer to increase efficiency
     }
   }
 
@@ -154,12 +154,12 @@ private:
   //callback function executed each time "mobile_base/events/bumper" topic updates
   void bumper_callback(const kobuki_msgs::BumperEvent bump)
   {
-  	if (bump.state == 1) //if bumper sensor is activated
-  	{
-  	  emergency_activated = true;
-  	  joy_publish_timer.stop();//stop publishing, thus moving
-        current_linear_velocity=0;//reset current linear velocity
-  	}
+    if (bump.state == 1) //if bumper sensor is activated
+    {
+      emergency_activated = true;
+      joy_publish_timer.stop();//stop publishing, thus moving
+      current_linear_velocity=0;//reset current linear velocity
+    }
   }
 
 
@@ -172,7 +172,7 @@ private:
     {
       joy_publish_timer.stop();//stop publishing, thus moving
       current_linear_velocity=0;//reset current linear velocity
-  
+
       //stop
       joy_velocity_published_value.angular.z = 0;
       joy_velocity_published_value.linear.x = 0;
@@ -184,7 +184,7 @@ private:
       emergency_activated = true;//return to default joystick position after emergency break before moving
     }
 
-        
+
    //MANUAL STEERING:
     //if gimbal is pushed
     if ((emergency_activated == false) && (joy.axes[0] > deadman_radius || joy.axes[0] < -deadman_radius || joy.axes[1] > deadman_radius || joy.axes[1] < -deadman_radius))
@@ -335,6 +335,7 @@ int main(int argc, char** argv)
 // Loop, repeat receiving subscribtion, thus executing callback functions each time topic is updated
   ros::spin();
 }
+
 
 
 

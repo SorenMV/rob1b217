@@ -9,9 +9,7 @@
 	<param name="/move_base/DWAPlannerROS/acc_lim_x" value="0.525" />
 	<param name="/move_base/DWAPlannerROS/max_rot_vel" value="1.57" />
 
-	<node pkg="joy" type="joy_node" name="joy_node">
-	</node>
-
+	<node pkg="joy" type="joy_node" name="joy_node" />
 
 	<node pkg="joystick_control" type="joystick_control_node" name="joystick_control_node" />
 	<node pkg="go_to_point" type="go_to_point_node" name="go_to_point_node" />

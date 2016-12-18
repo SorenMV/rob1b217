@@ -64,6 +64,7 @@ rosrun joystick_constrol joystick_constrol_node
 ---
 or use the roslaunch command to skip all steps:
 ```
+source devel/setup.bash
 roslaunch rosrun go_to_point base.launch
 ```
 ## User guide

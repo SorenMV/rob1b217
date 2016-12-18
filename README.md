@@ -65,7 +65,7 @@ rosrun joystick_constrol joystick_constrol_node
 or use the roslaunch command to skip all steps:
 ```
 source devel/setup.bash
-roslaunch rosrun go_to_point base.launch
+roslaunch go_to_point base.launch
 ```
 ## User guide
 The robot has 4 predefined locations: __A__, __B__, __X__, __Y__ on the X-Box controller. 

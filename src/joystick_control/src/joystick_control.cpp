@@ -1,18 +1,23 @@
 #include <ros/ros.h>
+
 //we need "<sensor_msgs/Joy.h>" to get the "sensor_msgs::Joy" message out of "joy" topic,
 //which contains input from joystick: float "axes[8]", int "buttons[11]" 
 //and "header" (the time the data is received from the joystick)
 #include <sensor_msgs/Joy.h>
+
 //we need this one to send the "geometry_msgs::Twist" message to "mobile_base/commands/velocity" topic (Kobuki),
 //which consists of: geometry_msgs/Vector3 "linear" , geometry_msgs/Vector3 "angular";
 //"geometry_msgs/Vector3" has float "x", float "y" and float "z"
 #include <geometry_msgs/Twist.h>
+
 //we need this one to see if bumper sensor is activated
 //topic - "mobile_base/events/bumper"
 #include <kobuki_msgs/BumperEvent.h>
+
 //we need this one to honk the horn
 //topic - "mobile_base/commands/sound"
 #include <kobuki_msgs/Sound.h>
+
 //publishing "std_msgs::UInt16" to go_to_point node
 //which contains: uint16_t "data"
 #include "std_msgs/UInt16.h"

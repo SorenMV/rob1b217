@@ -22,6 +22,9 @@
 //which contains: uint16_t "data"
 #include "std_msgs/UInt16.h"
 
+//ADDITIONAL IMPLEMENTATION:
+#include <kobuki_msgs/Led.h>
+
 
 
 //distance the joystick gimbal has be offset to allow the manual steering
@@ -63,9 +66,17 @@ public:
   bool Apressed, Bpressed, Xpressed, Ypressed, backpressed, startpressed, emergency_activated ;
 
   //speed smoothing variables
-  float current_linear_velocity, desired_linear_velocity, desired_angular_velocity            ;
+  float current_linear_velocity, desired_linear_velocity, desired_angular_velocity;
 
-
+  //ADDITIONAL IMPLEMENTATION:
+  ros::Subscriber       subscribtion_from_vel            ;
+  ros::Publisher        led1_pub                         ;
+  ros::Publisher        led2_pub                         ;
+  kobuki_msgs::Led      led1                             ;
+  kobuki_msgs::Led      led2                             ;
+  ros::Timer            additional_timer_b               ;
+  ros::Timer            additional_timer_l               ;
+  ros::Timer            additional_timer_r               ;
 
   //CONSTRUCTOR:
   joystick_class()
@@ -87,7 +98,18 @@ public:
    //TIMER:
     //periodically publishing "mobile_base/commands/velocity" to make the movement smooth
     joy_publish_timer = joy_nodehandle.createTimer(ros::Duration(period),  &joystick_class::publishing, this);
-  }
+
+
+
+
+  //ADDITIONAL IMPLEMENTATION:
+  subscribtion_from_vel = joy_nodehandle.subscribe<geometry_msgs::Twist>("mobile_base/commands/velocity", 10, &joystick_class::LED_callback, this); 
+  led1_pub = joy_nodehandle.advertise<kobuki_msgs::Led>("mobile_base/commands/led1", 1);
+  led2_pub = joy_nodehandle.advertise<kobuki_msgs::Led>("mobile_base/commands/led2", 1);
+  additional_timer_b = joy_nodehandle.createTimer(ros::Duration(0.05),  &joystick_class::additional_blink_b, this);
+  additional_timer_l = joy_nodehandle.createTimer(ros::Duration(0.05),  &joystick_class::additional_blink_l, this);
+  additional_timer_r = joy_nodehandle.createTimer(ros::Duration(0.05),  &joystick_class::additional_blink_r, this);
+ }
 
 
 
@@ -325,6 +347,99 @@ private:
       horn.value=1;
       horn_publisher.publish(horn);
     }
+  }
+
+//ADDITIONAL IMPLEMENTATION:
+  void LED_callback(const geometry_msgs::Twist just_twist)
+  {
+    //if((just_twist.linear.x <= deadman_radius && just_twist.linear.x >= -deadman_radius && just_twist.angular.z <= deadman_radius && just_twist.angular.z >= -deadman_radius))
+    if (just_twist.linear.x == 0 && just_twist.angular.z == 0)
+    {
+      led1.value = 3;
+      led2.value = 3;
+      led1_pub.publish(led1);
+      led2_pub.publish(led2);
+      additional_timer_b.stop();
+      additional_timer_r.stop();
+      additional_timer_l.stop();
+    }
+    else if (just_twist.linear.x < (-deadman_radius/5))
+    {
+      additional_timer_b.start();
+      additional_timer_r.stop();
+      additional_timer_l.stop();
+    }
+    else if (just_twist.linear.x > (-deadman_radius/5))
+    {
+      if (just_twist.angular.z > (deadman_radius/2))
+      {
+        additional_timer_r.start();
+        additional_timer_b.stop();
+        additional_timer_l.stop();
+      }
+      else if (just_twist.angular.z < (-deadman_radius/2))
+      {
+        additional_timer_l.start();
+        additional_timer_b.stop();
+        additional_timer_r.stop();
+      }
+      else
+      {
+      led1.value = 1;
+      led2.value = 1;
+      led1_pub.publish(led1);
+      led2_pub.publish(led2);
+      additional_timer_b.stop();
+      additional_timer_r.stop();
+      additional_timer_l.stop();
+    }
+    }
+  }
+
+  void additional_blink_b(const ros::TimerEvent&)
+  {
+      if(led1.value == 0 || led2.value == 0)
+        {
+         led1.value = 2;
+         led2.value = 2;
+        }
+      else
+        {
+         led1.value = 0;
+         led2.value = 0;
+        }
+      led1_pub.publish(led1);
+      led2_pub.publish(led2);
+      horn.value = 3;
+      horn_publisher.publish(horn);
+  }
+
+  void additional_blink_l(const ros::TimerEvent&)
+  {
+    if(led2.value == 1)
+      {
+       led1.value = 0;
+       led2.value = 0;
+      }
+    else
+      {
+       led1.value = 0;
+       led2.value = 1;
+      }
+    led1_pub.publish(led1);
+    led2_pub.publish(led2);
+  }
+
+  void additional_blink_r(const ros::TimerEvent&)
+  {
+    if(led1.value == 1)
+    {led1.value = 0;
+     led2.value = 0;}
+    else
+    {led1.value = 1;
+     led2.value = 0;}
+    led1_pub.publish(led1);
+    led2_pub.publish(led2);
   }
 };
 
